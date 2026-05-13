@@ -368,7 +368,7 @@ cancer_panel_ui <- function() {
   div(class = "container-fluid px-4 py-4",
 
     indicator_header(
-      "Cancer Patients & SHA Payments",
+      "SHA Payments for Cancer Treatment",
       "SHA-06 (21–33) Hemato-Oncology Treatment &nbsp;&middot;&nbsp;
        Patient ID: CR Number &nbsp;&middot;&nbsp;
        Filters apply to all components on this page",

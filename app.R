@@ -18,7 +18,7 @@ INDICATORS <- list(
        icon = "bi-file-earmark-check", category = "Claim Flow Analysis"),
   list(id = "tat", label = "Claims TAT",
        icon = "bi-stopwatch",          category = "Claim Flow Analysis"),
-  list(id = "cnc", label = "Payment for Cancer treament",
+  list(id = "cnc", label = "SHA Cancer Treatment Payments",
        icon = "bi-heart-pulse-fill",   category = "Health Services")
 )
 
