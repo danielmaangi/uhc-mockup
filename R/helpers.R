@@ -75,30 +75,25 @@ make_pagination <- function(current_page, total_pages, input_name) {
 }
 
 # Shared page-subtitle bar used at the top of each indicator content area.
-indicator_header <- function(title, subtitle, badges = NULL,
-                             last_updated = NULL, source = NULL, info = NULL) {
-  right_content <- tagList(
-    if (!is.null(badges))
-      div(class = "d-flex gap-2 flex-wrap justify-content-end mb-1", badges),
-    if (!is.null(last_updated))
-      div(class = "d-flex align-items-center gap-1 justify-content-end mt-1",
-        style = "font-size:.72rem; color:#64748b;",
-        tags$i(class = "bi bi-clock-history", style = "font-size:.72rem;"),
-        tags$span(paste0("Last updated: ", last_updated))
-      ),
-    if (!is.null(source))
-      div(class = "d-flex align-items-center gap-1 justify-content-end mt-1",
-        style = "font-size:.72rem; color:#64748b;",
-        tags$i(class = "bi bi-database", style = "font-size:.72rem;"),
-        tags$span(paste0("Source: ", source))
-      )
+indicator_header <- function(title, badges = NULL,
+                             last_updated = NULL, source = NULL, info = NULL,
+                             title_suffix_id = NULL) {
+  # Auto-build subtitle from source + last_updated
+  parts <- c(
+    if (!is.null(source))       paste0('<i class="bi bi-database me-1"></i>', source),
+    if (!is.null(last_updated)) paste0('<i class="bi bi-clock-history me-1"></i>Last updated: ', last_updated)
   )
+  subtitle <- if (length(parts) > 0)
+    paste(parts, collapse = " &nbsp;&middot;&nbsp; ")
+
   div(
     class = "d-flex justify-content-between align-items-start mb-4",
     div(
-      tags$h5(class = "fw-bold mb-0 d-flex align-items-center gap-2",
+      tags$h5(class = "fw-bold mb-0 d-flex align-items-center gap-2 flex-wrap",
         style = "color:#0f172a;",
         title,
+        if (!is.null(title_suffix_id))
+          uiOutput(title_suffix_id, inline = TRUE),
         if (!is.null(info))
           tags$i(
             class = "bi bi-info-circle",
@@ -109,9 +104,16 @@ indicator_header <- function(title, subtitle, badges = NULL,
             title = info
           )
       ),
-      tags$p(class = "text-muted mb-0 mt-1", style = "font-size:.84rem;",
-             HTML(subtitle))
+      if (!is.null(subtitle))
+        tags$p(class = "text-muted mb-0 mt-1", style = "font-size:.78rem;",
+               HTML(subtitle))
     ),
-    div(class = "flex-shrink-0 text-end", right_content)
+    if (!is.null(badges))
+      div(class = "flex-shrink-0 text-end",
+        div(style = "font-size:.6rem; font-weight:700; text-transform:uppercase;
+                     letter-spacing:.1em; color:#94a3b8; margin-bottom:.3rem;",
+            "RBAC"),
+        div(class = "d-flex gap-1 flex-wrap justify-content-end", badges)
+      )
   )
 }

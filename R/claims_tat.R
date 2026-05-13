@@ -372,14 +372,13 @@ tat_panel_ui <- function() {
 
     indicator_header(
       "Claims Turnaround Time (TAT)",
-      "TAT = Date Paid &minus; Date Created &nbsp;&middot;&nbsp;
-       Filters apply to all components on this page",
       last_updated = "13 May 2026",
       source = "Payer System",
       info = "Measures the time (in days) from claim creation to payment date. Used to monitor processing efficiency and identify bottlenecks across counties and facility levels.",
+      title_suffix_id = "tat_location_suffix",
       badges = tagList(
-        tags$span(class = "badge text-bg-primary px-3 py-2 rounded-pill",   "SHA"),
-        tags$span(class = "badge text-bg-secondary px-3 py-2 rounded-pill", "DHA")
+        tags$span(class = "badge text-bg-primary px-3 py-2 rounded-pill",   "sha_user"),
+        tags$span(class = "badge text-bg-secondary px-3 py-2 rounded-pill", "dha_user")
       )
     ),
 
@@ -467,6 +466,13 @@ tat_server <- function(input, output, session) {
 
   output$tat_pagination <- renderUI({
     make_pagination(min(tat_page(), total_pages()), total_pages(), "tat_page_num")
+  })
+
+  output$tat_location_suffix <- renderUI({
+    sel <- input$tat_county
+    loc <- if (is.null(sel) || length(sel) == 0) "Kenya" else paste(sel, collapse = ", ")
+    tags$span(style = "color:#94a3b8; font-weight:400; font-size:1rem;",
+              paste0("| ", loc))
   })
 
   observeEvent(input$tat_reset, {

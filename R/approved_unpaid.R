@@ -5,7 +5,7 @@
 
 # ---- Data --------------------------------------------------------------------
 
-.APX_FUNDS <- c("SHIF", "ECCIF", "POMSF")
+.APX_FUNDS <- c("SHIF", "ECCIF", "POMSF", "PHC")
 
 .APX_COUNTIES <- c("Nairobi", "Mombasa", "Kisumu", "Nakuru", "Eldoret",
                    "Thika", "Kitale", "Garissa", "Meru", "Nyeri")
@@ -228,23 +228,12 @@ apx_panel_ui <- function() {
 
     indicator_header(
       "Unpaid Claims in ERP",
-      "Payment-ready claims that have not yet been disbursed",
       last_updated = "13 May 2026",
       source = "Payer System",
       info = "Claims that have been approved and are payment-ready but have not yet been disbursed in the ERP system. Broken down by fund (SHIF, ECCIF, POMSF) and drillable to county and provider level.",
       badges = tagList(
-        tags$span(class = "badge text-bg-primary px-3 py-2 rounded-pill",   "SHA"),
-        tags$span(class = "badge text-bg-secondary px-3 py-2 rounded-pill", "DHA")
-      )
-    ),
-
-    div(
-      class = "alert d-flex align-items-start gap-2 py-2 mb-3 border-0",
-      style = "background:#eff6ff; color:#1e40af; font-size:.84rem;",
-      tags$i(class = "bi bi-info-circle-fill flex-shrink-0 mt-1"),
-      tags$span(
-        tags$strong("Summary metrics"), " reflect real-time data and are ",
-        tags$strong("not"), " subject to any date range filter."
+        tags$span(class = "badge text-bg-primary px-3 py-2 rounded-pill",   "sha_user"),
+        tags$span(class = "badge text-bg-secondary px-3 py-2 rounded-pill", "dha_user")
       )
     ),
 

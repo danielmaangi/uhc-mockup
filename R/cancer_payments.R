@@ -369,15 +369,12 @@ cancer_panel_ui <- function() {
 
     indicator_header(
       "SHA Payments for Cancer Treatment",
-      "SHA-06 (21–33) Hemato-Oncology Treatment &nbsp;&middot;&nbsp;
-       Patient ID: CR Number &nbsp;&middot;&nbsp;
-       Filters apply to all components on this page",
       last_updated = "13 May 2026",
       source = "Payer System",
       info = "Tracks SHA Hemato-Oncology (SHA-06, benefit codes 21–33) treatment payments. Each patient is identified by their CR Number. Covers unique patients, new patients, and total amounts paid by SHA.",
+      title_suffix_id = "cnc_location_suffix",
       badges = tagList(
-        tags$span(class = "badge text-bg-primary px-3 py-2 rounded-pill",   "SHA"),
-        tags$span(class = "badge text-bg-secondary px-3 py-2 rounded-pill", "DHA")
+        tags$span(class = "badge text-bg-success px-3 py-2 rounded-pill", "all_users")
       )
     ),
 
@@ -395,7 +392,7 @@ cancer_panel_ui <- function() {
     div(class = "row g-4",
       div(class = "col-12 col-xl-6",
         .cnc_chart_card(
-          "Patient Volume Trends",
+          "Cancer Patient Trends",
           "Unique patients vs new patients SHA paid for",
           "cncVolumeChart"
         )
@@ -475,6 +472,13 @@ cancer_server <- function(input, output, session) {
 
   output$cnc_pagination <- renderUI({
     make_pagination(min(cnc_page(), total_pages()), total_pages(), "cnc_page_num")
+  })
+
+  output$cnc_location_suffix <- renderUI({
+    sel <- input$cnc_county
+    loc <- if (is.null(sel) || length(sel) == 0) "Kenya" else paste(sel, collapse = ", ")
+    tags$span(style = "color:#94a3b8; font-weight:400; font-size:1rem;",
+              paste0("| ", loc))
   })
 
   observeEvent(input$cnc_reset, {
