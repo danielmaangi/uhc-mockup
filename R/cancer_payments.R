@@ -218,7 +218,7 @@ cancer_chart_js <- paste0(
 .cnc_cards_ui <- function(s, d) {
   div(class = "row row-cols-1 row-cols-sm-3 g-3",
     .cnc_metric_card(
-      "Unique patients treated (last 3 months)",
+      "Total patients treated (last 3 months)",
       fmt_num(s$unique_3m),
       "bi bi-people-fill", "#7c3aed",
       d$unique_3m
@@ -376,7 +376,7 @@ cancer_panel_ui <- function() {
       "SHA Payments for Cancer Treatment",
       last_updated = "13 May 2026",
       source = "Payer System",
-      info = "Tracks SHA Hemato-Oncology (SHA-06, benefit codes 21–33) treatment payments. Each patient is identified by their CR Number. Covers unique patients, new patients, and total amounts paid by SHA.",
+      info = "Tracks SHA cancer treatment payments by county. Covers total patients treated, new patients (SHA paying for chemotherapy for the very first time that month), and total amounts paid by SHA.",
       title_suffix_id = "cnc_location_suffix",
       badges = tagList(
         tags$span(class = "badge text-bg-success px-3 py-2 rounded-pill", "all_users")
@@ -407,7 +407,8 @@ cancer_panel_ui <- function() {
         .cnc_chart_card(
           "Payment Amount Trends",
           "Total amount vs amount paid for new patients (KES M)",
-          "cncAmountChart"
+          "cncAmountChart",
+          note = "<sup>*</sup> <strong>New patients:</strong> SHA is paying for chemotherapy treatment for the very first time in that month."
         )
       )
     ),
