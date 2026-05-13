@@ -1,0 +1,472 @@
+library(shiny)
+library(bslib)
+library(jsonlite)
+
+source("R/helpers.R")
+source("R/approved_unpaid.R")
+source("R/claims_tat.R")
+source("R/cancer_payments.R")
+
+# ==============================================================================
+# NAVIGATION DEFINITION
+# Each entry: id, label, icon, category, panel_ui
+# Add new indicators here — no other changes needed.
+# ==============================================================================
+
+INDICATORS <- list(
+  list(id = "apx", label = "Unpaid Claims in ERP",
+       icon = "bi-file-earmark-check", category = "Claim Flow Analysis"),
+  list(id = "tat", label = "Claims TAT",
+       icon = "bi-stopwatch",          category = "Claim Flow Analysis"),
+  list(id = "cnc", label = "Payment for Cancer treament",
+       icon = "bi-heart-pulse-fill",   category = "Health Services")
+)
+
+# ==============================================================================
+# SIDEBAR NAVIGATION
+# ==============================================================================
+
+.nav_item <- function(ind, is_first) {
+  div(
+    id    = paste0("nav-", ind$id),
+    class = paste("sidebar-nav-item", if (is_first) "active" else ""),
+    onclick = sprintf(
+      "Shiny.setInputValue('nav_click', '%s', {priority: 'event'})",
+      ind$id
+    ),
+    tags$i(class = paste("bi", ind$icon, "sidebar-nav-icon")),
+    span(ind$label)
+  )
+}
+
+.build_sidebar_nav <- function(indicators) {
+  # Group by category
+  categories <- unique(sapply(indicators, `[[`, "category"))
+  groups <- lapply(categories, function(cat) {
+    items <- Filter(function(x) x$category == cat, indicators)
+    tagList(
+      div(class = "sidebar-category-label",
+        tags$i(class = "bi bi-collection me-2"),
+        cat
+      ),
+      lapply(seq_along(items), function(i)
+        .nav_item(items[[i]], i == 1 && cat == categories[[1]])
+      )
+    )
+  })
+  do.call(tagList, groups)
+}
+
+app_sidebar <- sidebar(
+  width  = 230,
+  bg     = "white",
+  class  = "app-sidebar",
+
+  # App brand
+  div(class = "sidebar-brand",
+    tags$i(class = "bi bi-shield-plus sidebar-brand-icon"),
+    div(
+      div(class = "sidebar-brand-name", "Phase 1"),
+      div(class = "sidebar-brand-sub",  "Mockups")
+    )
+  ),
+
+  tags$hr(class = "sidebar-divider"),
+
+  # Indicator navigation
+  div(class = "sidebar-nav-list",
+    .build_sidebar_nav(INDICATORS)
+  )
+)
+
+# ==============================================================================
+# STYLES & SCRIPTS
+# ==============================================================================
+
+app_css <- HTML("
+  /* ── Design tokens (ported from main application stylesheet) ────────── */
+  :root {
+    --radius: 0.65rem;
+    --background:             oklch(1 0 0);
+    --foreground:             oklch(0.2 0.02 260);
+    --card:                   oklch(1 0 0);
+    --card-foreground:        oklch(0.2 0.02 260);
+    --primary:                oklch(0.55 0.16 232);
+    --primary-foreground:     oklch(0.99 0.01 232);
+    --secondary:              oklch(0.96 0.004 260);
+    --secondary-foreground:   oklch(0.25 0.02 260);
+    --muted:                  oklch(0.965 0.004 260);
+    --muted-foreground:       oklch(0.45 0.02 260);
+    --accent:                 oklch(0.965 0.004 260);
+    --accent-foreground:      oklch(0.25 0.02 260);
+    --border:                 oklch(0.9 0.006 260);
+    --input:                  oklch(0.9 0.006 260);
+    --ring:                   oklch(0.55 0.16 232);
+    --sidebar:                oklch(1 0 0);
+    --sidebar-foreground:     oklch(0.2 0.02 260);
+    --sidebar-primary:        oklch(0.55 0.16 232);
+    --sidebar-primary-fg:     oklch(0.99 0.01 232);
+    --sidebar-accent:         oklch(0.965 0.004 260);
+    --sidebar-accent-fg:      oklch(0.25 0.02 260);
+    --sidebar-border:         oklch(0.9 0.006 260);
+  }
+
+  /* ── Fonts ──────────────────────────────────────────────────────────── */
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    background: oklch(0.97 0.003 260);
+    color: var(--foreground);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Sidebar (light theme) ──────────────────────────────────────────── */
+  .app-sidebar { border-right: 1px solid var(--sidebar-border) !important; }
+
+  .sidebar-brand {
+    display: flex; align-items: center; gap: .75rem;
+    padding: 1.2rem 1rem 1rem;
+    border-bottom: 1px solid var(--sidebar-border);
+    margin-bottom: .5rem;
+  }
+  .sidebar-brand-icon  { font-size: 1.45rem; color: var(--primary); }
+  .sidebar-brand-name  { font-size: .9rem; font-weight: 700;
+                         color: var(--sidebar-foreground); line-height: 1.2; }
+  .sidebar-brand-sub   { font-size: .62rem; color: var(--muted-foreground);
+                         text-transform: uppercase; letter-spacing: .08em; }
+
+  .sidebar-divider { border-color: var(--sidebar-border); margin: .25rem .75rem .5rem; }
+
+  .sidebar-category-label {
+    font-size: .62rem; font-weight: 700; color: var(--muted-foreground);
+    text-transform: uppercase; letter-spacing: .1em;
+    padding: .85rem 1rem .35rem; display: flex; align-items: center;
+  }
+  .sidebar-nav-item {
+    display: flex; align-items: center; gap: .6rem;
+    padding: .48rem .85rem;
+    font-size: .835rem; font-weight: 500;
+    color: var(--sidebar-foreground); opacity: .7;
+    border-radius: calc(var(--radius) - 2px);
+    margin: .1rem .5rem;
+    cursor: pointer; transition: background .12s, color .12s, opacity .12s;
+  }
+  .sidebar-nav-item:hover  {
+    background: var(--sidebar-accent);
+    color: var(--sidebar-accent-fg);
+    opacity: 1;
+  }
+  .sidebar-nav-item.active {
+    background: var(--primary);
+    color: var(--sidebar-primary-fg);
+    opacity: 1; font-weight: 600;
+  }
+  .sidebar-nav-item.active .sidebar-nav-icon { opacity: .9; }
+  .sidebar-nav-icon { font-size: .9rem; flex-shrink: 0; }
+
+  /* ── Cards ───────────────────────────────────────────────────────────── */
+  .bslib-sidebar-layout > .main { padding: 0 !important; }
+  .card { border-radius: var(--radius) !important; border-color: var(--border) !important; }
+  .card-header, .card-footer { border-color: var(--border) !important; }
+
+  /* ── Standard table theme ────────────────────────────────────────────── */
+  .table {
+    font-size: .865rem;
+    --bs-table-hover-bg:    var(--accent);
+    --bs-table-border-color: var(--border);
+    margin-bottom: 0;
+  }
+  /* Unified header: small-caps labels, muted on subtle bg */
+  .table thead th,
+  .table-light th {
+    font-size: .7rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    letter-spacing: .055em;
+    color: var(--muted-foreground) !important;
+    background: var(--muted) !important;
+    border-bottom: 1px solid var(--border) !important;
+    padding: .65rem 1rem !important;
+    white-space: nowrap;
+  }
+  .table tbody td {
+    padding: .7rem 1rem !important;
+    border-color: var(--border) !important;
+    color: var(--foreground);
+    vertical-align: middle;
+  }
+  .table tbody tr:last-child td { border-bottom: none; }
+  /* Sortable column hover */
+  .sortable-col       { cursor: pointer; user-select: none; white-space: nowrap; }
+  .sortable-col:hover { background: var(--accent) !important; }
+
+  /* ── Indicator section labels ───────────────────────────────────────── */
+  .ind-section-label {
+    font-size: .67rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .09em; color: var(--muted-foreground); margin-bottom: .75rem;
+  }
+
+  /* ── Filter bar ─────────────────────────────────────────────────────── */
+  .filter-card {
+    background: linear-gradient(135deg, oklch(0.987 0.007 232), oklch(0.975 0.003 260)) !important;
+    border-left: 3px solid var(--primary) !important;
+  }
+  .filter-section-header {
+    display: flex; align-items: center; gap: .45rem;
+    font-size: .69rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--primary);
+    padding-bottom: .65rem; margin-bottom: .1rem;
+    border-bottom: 1px solid oklch(0.9 0.016 232);
+  }
+  .filter-bar-label {
+    font-size: .67rem; font-weight: 700; color: var(--muted-foreground);
+    text-transform: uppercase; letter-spacing: .06em;
+    margin-bottom: .28rem; display: flex; align-items: center; gap: .25rem;
+  }
+  /* Inputs */
+  .filter-bar-group .form-select,
+  .filter-bar-group .form-control {
+    font-size: .82rem !important;
+    border-radius: .5rem !important;
+    border-color: oklch(0.87 0.014 232) !important;
+    background: white !important;
+    padding: .35rem .65rem !important;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .filter-bar-group .form-select:focus,
+  .filter-bar-group .form-control:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px oklch(0.55 0.16 232 / 0.14) !important;
+    outline: none;
+  }
+  /* Selectize overrides */
+  .filter-bar-group .selectize-control { border-radius: .5rem; }
+  .filter-bar-group .selectize-input {
+    font-size: .82rem !important;
+    border-color: oklch(0.87 0.014 232) !important;
+    border-radius: .5rem !important;
+    background: white !important;
+    padding: .32rem .65rem !important;
+    box-shadow: none !important;
+    min-height: 34px !important;
+    line-height: 1.5 !important;
+  }
+  .filter-bar-group .selectize-input.focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px oklch(0.55 0.16 232 / 0.14) !important;
+  }
+  .filter-bar-group .selectize-input > .item {
+    background: oklch(0.92 0.028 232) !important;
+    color: oklch(0.42 0.13 232) !important;
+    border: 1px solid oklch(0.83 0.038 232) !important;
+    border-radius: .35rem !important;
+    font-size: .73rem !important; font-weight: 600 !important;
+    padding: .06rem .45rem !important;
+    margin: .1rem .15rem .1rem 0 !important;
+  }
+  /* Filter action buttons */
+  .btn-filter-apply {
+    font-size: .82rem; font-weight: 600;
+    padding: .42rem 1.1rem; border-radius: .5rem; letter-spacing: .01em;
+  }
+  .btn-filter-reset {
+    font-size: .82rem; padding: .42rem .7rem;
+    border-radius: .5rem;
+    color: var(--muted-foreground) !important;
+    border-color: oklch(0.87 0.014 232) !important;
+    background: white !important;
+  }
+  .btn-filter-reset:hover {
+    background: var(--accent) !important;
+    border-color: var(--border) !important;
+  }
+  /* APX county search */
+  .apx-search-wrap .input-group-text {
+    border-color: oklch(0.87 0.014 232) !important;
+    border-radius: .5rem 0 0 .5rem !important;
+    background: white !important;
+    padding: .3rem .55rem !important;
+  }
+  .apx-search-wrap .apx-search {
+    border-color: oklch(0.87 0.014 232) !important;
+    border-radius: 0 .5rem .5rem 0 !important;
+    font-size: .82rem !important;
+    padding: .3rem .55rem !important;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .apx-search-wrap .apx-search:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px oklch(0.55 0.16 232 / 0.14) !important;
+    outline: none;
+  }
+
+  /* ── Fund-type pills (Approved vs Unpaid) ───────────────────────────── */
+  .nav-pills .nav-link {
+    font-weight: 500; color: var(--muted-foreground);
+    border-radius: var(--radius); padding: .38rem 1rem;
+  }
+  .nav-pills .nav-link.active {
+    background: var(--primary); color: var(--primary-foreground);
+  }
+
+  /* ── Alternating row colors ─────────────────────────────────────────── */
+  /* Plain tables (TAT, Cancer): Bootstrap stripe color */
+  .table-striped { --bs-table-striped-bg: oklch(0.955 0.012 232); }
+  /* APX county rows: explicit class on every other row */
+  .county-row-alt > td { background: oklch(0.955 0.012 232) !important; }
+
+  /* ── Collapsible county rows (Approved vs Unpaid) ───────────────────── */
+  .county-row          { cursor: pointer; user-select: none; }
+  .county-row:hover td { background: var(--accent) !important; }
+  .county-row.expanded td {
+    background: oklch(0.96 0.012 232) !important;
+  }
+  .county-row.expanded .expand-chevron {
+    transform: rotate(90deg); color: var(--primary) !important;
+  }
+  .expand-chevron     { transition: transform .18s ease; display: inline-block; }
+  .county-name-cell   { padding-left: 1rem !important; }
+  .provider-name-cell { padding-left: 2.8rem !important; }
+  .provider-row td    { background: var(--muted); border-top: 1px solid var(--border); }
+")
+
+app_js <- HTML("
+  /* ── Bootstrap tooltips ─────────────────────────────────────────────── */
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[data-bs-toggle=\"tooltip\"]').forEach(function(el) {
+      new bootstrap.Tooltip(el, { html: true });
+    });
+  });
+
+  /* ── Nav click: switch indicator panel ─────────────────────────────── */
+  Shiny.addCustomMessageHandler('setActiveNav', function(id) {
+    $('.sidebar-nav-item').removeClass('active');
+    $('#nav-' + id).addClass('active');
+    /* Initialise Chart.js charts when TAT panel first becomes visible */
+    if (id === 'tat' && typeof window.revealTatCharts === 'function') {
+      setTimeout(window.revealTatCharts, 80);
+    }
+    if (id === 'cnc' && typeof window.revealCancerCharts === 'function') {
+      setTimeout(window.revealCancerCharts, 80);
+    }
+  });
+
+  /* ── County expand / collapse (Approved vs Unpaid) ─────────────────── */
+  $(document).on('click', '.county-row', function() {
+    var cid  = $(this).data('county-id');
+    var rows = $('.' + cid);
+    if (rows.first().is(':visible')) {
+      rows.hide(); $(this).removeClass('expanded');
+    } else {
+      rows.show(); $(this).addClass('expanded');
+    }
+  });
+
+  /* ── County search (Approved vs Unpaid) ─────────────────────────────── */
+  $(document).on('input', '.apx-search', function() {
+    var q    = $(this).val().toLowerCase();
+    var fund = $(this).data('fund');
+    $('table[data-fund=\"' + fund + '\"]').find('.county-row').each(function() {
+      var name = $(this).find('.county-name-cell').text().trim().toLowerCase();
+      var cid  = $(this).data('county-id');
+      if (name.indexOf(q) !== -1) {
+        $(this).show();
+      } else {
+        $(this).hide().removeClass('expanded');
+        $('.' + cid).hide();
+      }
+    });
+  });
+
+  /* ── Sortable columns (all tables) ──────────────────────────────────── */
+  $(document).on('click', '.sortable-col', function() {
+    var th    = $(this);
+    var table = th.closest('table');
+    var tbody = table.find('tbody');
+    var idx   = th.index();
+    var asc   = th.hasClass('sort-asc');
+    table.find('.sortable-col').removeClass('sort-asc sort-desc');
+    th.addClass(asc ? 'sort-desc' : 'sort-asc');
+
+    if (tbody.find('.county-row').length > 0) {
+      /* Approved vs Unpaid: sort county rows, provider rows follow */
+      var countyRows = tbody.find('.county-row').toArray();
+      countyRows.sort(function(a, b) {
+        var aT = $(a).find('td').eq(idx).text().trim();
+        var bT = $(b).find('td').eq(idx).text().trim();
+        var aN = parseFloat(aT.replace(/[^0-9.]/g, ''));
+        var bN = parseFloat(bT.replace(/[^0-9.]/g, ''));
+        if (!isNaN(aN) && !isNaN(bN)) return asc ? bN - aN : aN - bN;
+        return asc ? bT.localeCompare(aT) : aT.localeCompare(bT);
+      });
+      countyRows.forEach(function(row) {
+        var cid = $(row).data('county-id');
+        tbody.append(row);
+        tbody.find('.' + cid).each(function() { tbody.append(this); });
+      });
+    } else {
+      /* TAT county table: plain sort */
+      var rows = tbody.find('tr').toArray();
+      rows.sort(function(a, b) {
+        var aT = $(a).find('td').eq(idx).text().trim();
+        var bT = $(b).find('td').eq(idx).text().trim();
+        var aN = parseFloat(aT.replace(/[^0-9.]/g, ''));
+        var bN = parseFloat(bT.replace(/[^0-9.]/g, ''));
+        if (!isNaN(aN) && !isNaN(bN)) return asc ? bN - aN : aN - bN;
+        return asc ? bT.localeCompare(aT) : aT.localeCompare(bT);
+      });
+      rows.forEach(function(r) { tbody.append(r); });
+    }
+  });
+")
+
+# ==============================================================================
+# UI
+# ==============================================================================
+
+ui <- page_sidebar(
+  title   = "Phase 1 Mockup",
+  theme   = bs_theme(version = 5, primary = "#0e82b5"),   # ≈ oklch(0.55 0.16 232)
+  sidebar = app_sidebar,
+  fillable = FALSE,
+
+  tags$head(
+    tags$link(rel  = "stylesheet",
+              href = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"),
+    tags$script(src = "https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"),
+    tags$style(app_css),
+    tags$script(HTML(tat_chart_js)),     # from claims_tat.R
+    tags$script(HTML(cancer_chart_js)), # from cancer_payments.R
+    tags$script(app_js)
+  ),
+
+  # Hidden tabset — one tab per indicator
+  tabsetPanel(
+    id       = "current_indicator",
+    type     = "hidden",
+    selected = "apx",
+    tabPanel("apx", apx_panel_ui()),
+    tabPanel("tat", tat_panel_ui()),
+    tabPanel("cnc", cancer_panel_ui())
+  )
+)
+
+# ==============================================================================
+# SERVER
+# ==============================================================================
+
+server <- function(input, output, session) {
+
+  # Switch panel and update active nav item
+  observeEvent(input$nav_click, {
+    updateTabsetPanel(session, "current_indicator", selected = input$nav_click)
+    session$sendCustomMessage("setActiveNav", input$nav_click)
+  })
+
+  # Delegate to each indicator's server function
+  apx_server(input, output, session)
+  tat_server(input, output, session)
+  cancer_server(input, output, session)
+}
+
+shinyApp(ui = ui, server = server)
