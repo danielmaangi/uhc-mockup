@@ -82,7 +82,7 @@ cancer_chart_js <- paste0(
           labels: cncLabels,
           datasets: [
             Object.assign({}, lineBase, {
-              label: 'Unique patients',
+              label: 'Total patients',
               data: cncUnique,
               borderColor: '#7c3aed', pointBackgroundColor: '#7c3aed'
             }),
@@ -105,7 +105,7 @@ cancer_chart_js <- paste0(
                 afterBody: function(items) {
                   var idx = items[0].dataIndex;
                   var pct = ((cncNew[idx] / cncUnique[idx]) * 100).toFixed(1);
-                  return 'New as % of unique: ' + pct + '%';
+                  return 'New as % of total: ' + pct + '%';
                 }
               }
             }
@@ -238,7 +238,7 @@ cancer_chart_js <- paste0(
   )
 }
 
-.cnc_chart_card <- function(title, subtitle, canvas_id) {
+.cnc_chart_card <- function(title, subtitle, canvas_id, note = NULL) {
   div(class = "card border-0 shadow-sm",
     div(class = "card-header bg-white border-bottom px-4 py-3",
       div(class = "fw-semibold", style = "color:#0f172a;", title),
@@ -248,7 +248,12 @@ cancer_chart_js <- paste0(
       div(style = "position:relative; height:280px;",
         tags$canvas(id = canvas_id)
       )
-    )
+    ),
+    if (!is.null(note))
+      div(class = "card-footer bg-white border-top px-4 py-2",
+        tags$p(class = "mb-0", style = "font-size:.7rem; color:#94a3b8;",
+               HTML(note))
+      )
   )
 }
 
@@ -393,8 +398,9 @@ cancer_panel_ui <- function() {
       div(class = "col-12 col-xl-6",
         .cnc_chart_card(
           "Cancer Patient Trends",
-          "Unique patients vs new patients SHA paid for",
-          "cncVolumeChart"
+          "Total patients vs new patients SHA paid for",
+          "cncVolumeChart",
+          note = "<sup>*</sup> <strong>New patients:</strong> SHA is paying for chemotherapy treatment for the very first time in that month."
         )
       ),
       div(class = "col-12 col-xl-6",
@@ -423,7 +429,7 @@ cancer_panel_ui <- function() {
           uiOutput("cnc_pagination")
         ),
         tags$p(class = "mb-0 mt-2", style = "font-size:.7rem; color:#94a3b8;",
-          HTML("<sup>*</sup> New patients refers to patients treated for the first time within the current reporting month.")
+          HTML("<sup>*</sup> <strong>New patients:</strong> SHA is paying for chemotherapy treatment for the very first time in the reporting month.")
         )
       )
     )
