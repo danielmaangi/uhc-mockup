@@ -275,7 +275,7 @@ cancer_chart_js <- paste0(
         tags$tr(
           col_th("County Name",         "180px"),
           col_th("Total Cancer Patients"),
-          col_th("New Patients"),
+          col_th(HTML("New Patients <sup style='color:#94a3b8;'>*</sup>")),
           col_th("Amount SHA Paid")
         )
       ),
@@ -417,9 +417,14 @@ cancer_panel_ui <- function() {
         uiOutput("cnc_row_count")
       ),
       uiOutput("cnc_table_ui"),
-      div(class = "card-footer bg-white border-top d-flex justify-content-between align-items-center py-2 px-4",
-        uiOutput("cnc_showing"),
-        uiOutput("cnc_pagination")
+      div(class = "card-footer bg-white border-top px-4 py-2",
+        div(class = "d-flex justify-content-between align-items-center",
+          uiOutput("cnc_showing"),
+          uiOutput("cnc_pagination")
+        ),
+        tags$p(class = "mb-0 mt-2", style = "font-size:.7rem; color:#94a3b8;",
+          HTML("<sup>*</sup> New patients refers to patients treated for the first time within the current reporting month.")
+        )
       )
     )
   )

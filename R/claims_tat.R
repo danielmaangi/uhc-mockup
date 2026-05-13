@@ -206,28 +206,28 @@ tat_chart_js <- paste0(
 .tat_cards_ui <- function(s, d) {
   tagList(
     div(class = "row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-3",
-      .tat_metric_card("Number of Claims",   fmt_num(s$n_claims),
+      .tat_metric_card("Number of Claims",      fmt_num(s$n_claims),
                        "bi bi-file-earmark-medical-fill", "#0284c7", d$n_claims),
-      .tat_metric_card("Minimum TAT",        paste0(s$min_tat, " days"),
-                       "bi bi-lightning-charge-fill",     "#22d3ee",
-                       d$min_tat, lower_is_better = TRUE, suffix = " d"),
-      .tat_metric_card("Median TAT",         paste0(s$median_tat, " days"),
-                       "bi bi-bar-chart-line-fill",       "#f59e0b",
-                       d$median_tat, lower_is_better = TRUE, suffix = " d"),
-      .tat_metric_card("Maximum TAT",        paste0(s$max_tat, " days"),
-                       "bi bi-exclamation-circle-fill",   "#ef4444",
-                       d$max_tat, lower_is_better = TRUE, suffix = " d")
-    ),
-    div(class = "row row-cols-1 row-cols-sm-3 g-3 mt-1",
       .tat_metric_card("% Paid within 30 days", paste0(s$pct_30, "%"),
-                       "bi bi-check-circle-fill",  "#22c55e",
+                       "bi bi-check-circle-fill",         "#22c55e",
                        d$pct_30, suffix = "%"),
       .tat_metric_card("% Paid within 90 days", paste0(s$pct_90, "%"),
-                       "bi bi-clock-fill",         "#f59e0b",
+                       "bi bi-clock-fill",                "#f59e0b",
                        d$pct_90, suffix = "%"),
       .tat_metric_card("% Paid after 90 days",  paste0(s$pct_after90, "%"),
-                       "bi bi-x-circle-fill",      "#dc2626",
+                       "bi bi-x-circle-fill",             "#dc2626",
                        d$pct_after90, lower_is_better = TRUE, suffix = "%")
+    ),
+    div(class = "row row-cols-1 row-cols-sm-3 g-3 mt-1",
+      .tat_metric_card("Minimum TAT",  paste0(s$min_tat, " days"),
+                       "bi bi-lightning-charge-fill",   "#22d3ee",
+                       d$min_tat, lower_is_better = TRUE, suffix = " d"),
+      .tat_metric_card("Median TAT",   paste0(s$median_tat, " days"),
+                       "bi bi-bar-chart-line-fill",     "#f59e0b",
+                       d$median_tat, lower_is_better = TRUE, suffix = " d"),
+      .tat_metric_card("Maximum TAT",  paste0(s$max_tat, " days"),
+                       "bi bi-exclamation-circle-fill", "#ef4444",
+                       d$max_tat, lower_is_better = TRUE, suffix = " d")
     )
   )
 }

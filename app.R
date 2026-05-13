@@ -76,6 +76,12 @@ app_sidebar <- sidebar(
   # Indicator navigation
   div(class = "sidebar-nav-list",
     .build_sidebar_nav(INDICATORS)
+  ),
+
+  # Dummy data disclaimer
+  div(class = "sidebar-disclaimer",
+    tags$i(class = "bi bi-exclamation-triangle-fill me-1"),
+    "Demo only — all data is fictional and does not represent real claims or patients."
   )
 )
 
@@ -163,6 +169,17 @@ app_css <- HTML("
   }
   .sidebar-nav-item.active .sidebar-nav-icon { opacity: .9; }
   .sidebar-nav-icon { font-size: .9rem; flex-shrink: 0; }
+
+  /* ── Dummy data disclaimer ──────────────────────────────────────────── */
+  .sidebar-disclaimer {
+    margin: auto 0.75rem 0.75rem;
+    padding: 0.5rem 0.65rem;
+    font-size: .68rem; line-height: 1.45;
+    color: #92400e;
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    border-radius: 0.45rem;
+  }
 
   /* ── Cards ───────────────────────────────────────────────────────────── */
   .bslib-sidebar-layout > .main { padding: 0 !important; }
@@ -457,10 +474,23 @@ ui <- page_sidebar(
 
 server <- function(input, output, session) {
 
-  # Switch panel and update active nav item
+  .valid_tabs <- sapply(INDICATORS, `[[`, "id")
+
+  # On load: restore tab from ?tab= query parameter
+  observe({
+    query <- parseQueryString(session$clientData$url_search)
+    tab   <- query[["tab"]]
+    if (!is.null(tab) && tab %in% .valid_tabs) {
+      updateTabsetPanel(session, "current_indicator", selected = tab)
+      session$sendCustomMessage("setActiveNav", tab)
+    }
+  })
+
+  # On nav click: switch panel and push ?tab= to the URL
   observeEvent(input$nav_click, {
     updateTabsetPanel(session, "current_indicator", selected = input$nav_click)
     session$sendCustomMessage("setActiveNav", input$nav_click)
+    updateQueryString(paste0("?tab=", input$nav_click), mode = "replace")
   })
 
   # Delegate to each indicator's server function
