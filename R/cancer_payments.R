@@ -21,20 +21,23 @@ CANCER_LEVELS <- c("Level 2", "Level 3", "Level 4", "Level 5", "National Referra
 
 set.seed(77)
 cancer_county_df <- data.frame(
-  county          = CANCER_COUNTIES,
-  total_patients  = sample(40:800,  length(CANCER_COUNTIES), replace = TRUE),
-  new_patients    = sample(5:120,   length(CANCER_COUNTIES), replace = TRUE),
-  amount_paid     = runif(length(CANCER_COUNTIES), 2e5, 8e6),
+  county               = CANCER_COUNTIES,
+  cumulative_patients  = sample(200:3000, length(CANCER_COUNTIES), replace = TRUE),
+  total_patients       = sample(40:800,   length(CANCER_COUNTIES), replace = TRUE),
+  new_patients         = sample(5:120,    length(CANCER_COUNTIES), replace = TRUE),
+  amount_paid          = runif(length(CANCER_COUNTIES), 2e5, 8e6),
   stringsAsFactors = FALSE
 )
 
 cancer_summary <- list(
+  total_ever   = sum(cancer_county_df$cumulative_patients),
   unique_3m    = as.integer(round(sum(cancer_county_df$total_patients) * 0.72)),
   new_month    = sum(cancer_county_df$new_patients),
   amount_paid  = sum(cancer_county_df$amount_paid)
 )
 
 cancer_deltas <- list(
+  total_ever  = +312L,
   unique_3m   = +143L,
   new_month   = +28L,
   amount_paid = +1.24e6
@@ -216,7 +219,13 @@ cancer_chart_js <- paste0(
 }
 
 .cnc_cards_ui <- function(s, d) {
-  div(class = "row row-cols-1 row-cols-sm-3 g-3",
+  div(class = "row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3",
+    .cnc_metric_card(
+      "Cumulative patients treated",
+      fmt_num(s$total_ever),
+      "bi bi-person-check-fill", "#059669",
+      d$total_ever
+    ),
     .cnc_metric_card(
       "Total patients treated (last 3 months)",
       fmt_num(s$unique_3m),
@@ -268,6 +277,7 @@ cancer_chart_js <- paste0(
     r <- df[i, ]
     tags$tr(
       tags$td(class = "fw-medium", r$county),
+      tags$td(fmt_num(r$cumulative_patients)),
       tags$td(fmt_num(r$total_patients)),
       tags$td(fmt_num(r$new_patients)),
       tags$td(fmt_currency(r$amount_paid))
@@ -279,6 +289,7 @@ cancer_chart_js <- paste0(
       tags$thead(class = "table-light",
         tags$tr(
           col_th("County Name",         "180px"),
+          col_th("Cumulative Patients"),
           col_th("Total Cancer Patients"),
           col_th(HTML("New Patients <sup style='color:#94a3b8;'>*</sup>")),
           col_th("Amount SHA Paid")
