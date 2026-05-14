@@ -21,7 +21,7 @@ INDICATORS <- list(
        icon = "bi-stopwatch",          category = "Claim Flow Analysis"),
   list(id = "age", label = "Claims Ageing Report",
        icon = "bi-hourglass-split",    category = "Claim Flow Analysis"),
-  list(id = "cnc", label = "SHA Cancer Treatment Payments",
+  list(id = "cnc", label = "Cancer Payments",
        icon = "bi-heart-pulse-fill",   category = "Health Services")
 )
 
@@ -37,7 +37,6 @@ INDICATORS <- list(
       "Shiny.setInputValue('nav_click', '%s', {priority: 'event'})",
       ind$id
     ),
-    tags$i(class = paste("bi", ind$icon, "sidebar-nav-icon")),
     span(ind$label)
   )
 }
@@ -351,6 +350,23 @@ app_css <- HTML("
 ")
 
 app_js <- HTML("
+  /* ── Mock action feedback (export / escalate buttons) ───────────────── */
+  window.showMockAction = function(msg, type) {
+    var bg = (type === 'danger') ? 'text-bg-danger' : 'text-bg-success';
+    var el = document.createElement('div');
+    el.className = 'toast align-items-center ' + bg + ' border-0 position-fixed';
+    el.style.cssText = 'bottom:1.25rem;right:1.25rem;z-index:9999;min-width:290px;';
+    el.setAttribute('role', 'alert');
+    el.innerHTML =
+      '<div class=\"d-flex\"><div class=\"toast-body fw-medium\" style=\"font-size:.875rem;\">' +
+      msg + '</div>' +
+      '<button type=\"button\" class=\"btn-close btn-close-white me-2 m-auto\" data-bs-dismiss=\"toast\"></button></div>';
+    document.body.appendChild(el);
+    var t = new bootstrap.Toast(el, { delay: 3500 });
+    t.show();
+    el.addEventListener('hidden.bs.toast', function() { el.remove(); });
+  };
+
   /* ── Bootstrap tooltips ─────────────────────────────────────────────── */
   document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('[data-bs-toggle=\"tooltip\"]').forEach(function(el) {
@@ -457,6 +473,7 @@ ui <- page_sidebar(
     tags$link(rel  = "stylesheet",
               href = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"),
     tags$script(src = "https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"),
+    tags$script(src = "https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.1.0/dist/chartjs-plugin-annotation.min.js"),
     tags$style(app_css),
     tags$script(HTML(tat_chart_js)),      # from claims_tat.R
     tags$script(HTML(cancer_chart_js)),  # from cancer_payments.R

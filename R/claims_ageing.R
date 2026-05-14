@@ -309,6 +309,27 @@ ageing_panel_ui <- function() {
       )
     ),
 
+    insight_banner(
+      paste0(
+        fmt_num(ageing_summary$b90p), " claims aged 90+ days totalling ",
+        fmt_currency(ageing_summary$v90p), " — immediate escalation required."
+      ),
+      sub = paste0(
+        "A further ", fmt_num(ageing_summary$b61_90), " claims (",
+        fmt_currency(ageing_summary$v61_90),
+        ") are in the 61–90 day window."
+      ),
+      type = "danger"
+    ),
+
+    div(class = "d-flex justify-content-end gap-2 mb-3",
+      tags$button(type = "button",
+        class = "btn btn-sm btn-outline-secondary",
+        onclick = "showMockAction('Preparing Excel export — the file will download shortly.')",
+        tags$i(class = "bi bi-file-earmark-excel me-1"), "Export"
+      )
+    ),
+
     # Section 1 — Ageing bucket cards
     tags$h6(class = "ind-section-label", "Ageing Buckets"),
     div(class = "row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-3",
@@ -340,7 +361,14 @@ ageing_panel_ui <- function() {
     div(class = "card border-0 shadow-sm",
       div(class = "card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3 px-4",
         div(class = "fw-semibold", style = "color:#0f172a;", "Claims Ageing by County"),
-        uiOutput("ageing_row_count")
+        div(class = "d-flex align-items-center gap-2",
+          uiOutput("ageing_row_count"),
+          tags$button(type = "button",
+            class = "btn btn-sm btn-outline-secondary",
+            onclick = "showMockAction('Preparing ageing report Excel export — the file will download shortly.')",
+            tags$i(class = "bi bi-file-earmark-excel me-1"), "Export"
+          )
+        )
       ),
       uiOutput("ageing_table_ui"),
       div(class = "card-footer bg-white border-top d-flex justify-content-between align-items-center py-2 px-4",

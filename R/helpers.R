@@ -74,6 +74,41 @@ make_pagination <- function(current_page, total_pages, input_name) {
   )
 }
 
+# Insight banner — surfaces the "so what" at the top of each panel.
+insight_banner <- function(text, sub = NULL,
+                           type = c("warning", "danger", "info", "success")) {
+  type <- match.arg(type)
+  cfg <- list(
+    warning = list(bg = "#fffbeb", border = "#f59e0b",
+                   icon = "bi-exclamation-triangle-fill", color = "#b45309"),
+    danger  = list(bg = "#fef2f2", border = "#ef4444",
+                   icon = "bi-exclamation-octagon-fill",  color = "#dc2626"),
+    info    = list(bg = "#eff6ff", border = "#3b82f6",
+                   icon = "bi-info-circle-fill",          color = "#1d4ed8"),
+    success = list(bg = "#f0fdf4", border = "#22c55e",
+                   icon = "bi-check-circle-fill",         color = "#16a34a")
+  )
+  cf <- cfg[[type]]
+  div(
+    style = paste0(
+      "background:", cf$bg, "; border-left:4px solid ", cf$border, ";",
+      "border-radius:.6rem; padding:.85rem 1.1rem; margin-bottom:1.25rem;",
+      "display:flex; align-items:flex-start; gap:.7rem;"
+    ),
+    tags$i(class = paste("bi", cf$icon),
+           style = paste0("color:", cf$color,
+                          "; font-size:1.05rem; flex-shrink:0; margin-top:.1rem;")),
+    div(
+      tags$span(
+        style = paste0("font-size:.875rem; font-weight:600; color:", cf$color, ";"),
+        text
+      ),
+      if (!is.null(sub))
+        div(class = "mt-1", style = "font-size:.78rem; color:#64748b;", sub)
+    )
+  )
+}
+
 # Shared page-subtitle bar used at the top of each indicator content area.
 indicator_header <- function(title, badges = NULL,
                              last_updated = NULL, source = NULL, info = NULL,

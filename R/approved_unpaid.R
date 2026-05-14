@@ -237,6 +237,28 @@ apx_panel_ui <- function() {
       )
     ),
 
+    insight_banner(
+      paste0(
+        fmt_num(apx_overall_metrics$unpaid_claims),
+        " approved claims worth ", fmt_currency(apx_overall_metrics$unpaid_value),
+        " are pending ERP disbursement across all counties."
+      ),
+      sub = paste0(
+        round(apx_overall_metrics$unpaid_claims /
+                apx_overall_metrics$total_claims * 100, 1),
+        "% of approved claims remain unpaid. "
+      ),
+      type = "warning"
+    ),
+
+    div(class = "d-flex justify-content-end gap-2 mb-3",
+      tags$button(type = "button",
+        class = "btn btn-sm btn-outline-secondary",
+        onclick = "showMockAction('Preparing Excel export — the file will download shortly.')",
+        tags$i(class = "bi bi-file-earmark-excel me-1"), "Export"
+      )
+    ),
+
     # Fund-type tabs (Overall / SHIF / ECCIF / POMSF)
     tags$ul(class = "nav nav-pills gap-1 mb-1", role = "tablist",
       lapply(c("Overall", .APX_FUNDS), function(f) {

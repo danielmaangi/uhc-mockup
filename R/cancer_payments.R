@@ -394,6 +394,28 @@ cancer_panel_ui <- function() {
       )
     ),
 
+    insight_banner(
+      paste0(
+        fmt_num(cancer_summary$new_month),
+        " new patients received SHA-funded chemotherapy this month. ",
+        "Total SHA spend this period: ", fmt_currency(cancer_summary$amount_paid), "."
+      ),
+      sub = paste0(
+        "Cumulative treated: ", fmt_num(cancer_summary$total_ever), " patients ", ". ",
+        "Treated (last 3 months): ", fmt_num(cancer_summary$unique_3m), " patients ", ". ",
+        "New patients: ", fmt_num(cancer_summary$new_month), " patients."
+      ),
+      type = "info"
+    ),
+
+    div(class = "d-flex justify-content-end gap-2 mb-3",
+      tags$button(type = "button",
+        class = "btn btn-sm btn-outline-secondary",
+        onclick = "showMockAction('Preparing Excel export — the file will download shortly.')",
+        tags$i(class = "bi bi-file-earmark-excel me-1"), "Export"
+      )
+    ),
+
     # AC4 — filters
     .cnc_filter_bar(),
 
@@ -432,7 +454,14 @@ cancer_panel_ui <- function() {
       div(class = "card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3 px-4",
         div(class = "fw-semibold", style = "color:#0f172a;",
             "Cancer Patients & Payments by County"),
-        uiOutput("cnc_row_count")
+        div(class = "d-flex align-items-center gap-2",
+          uiOutput("cnc_row_count"),
+          tags$button(type = "button",
+            class = "btn btn-sm btn-outline-secondary",
+            onclick = "showMockAction('Preparing cancer payments Excel export — the file will download shortly.')",
+            tags$i(class = "bi bi-file-earmark-excel me-1"), "Export"
+          )
+        )
       ),
       uiOutput("cnc_table_ui"),
       div(class = "card-footer bg-white border-top px-4 py-2",

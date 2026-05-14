@@ -115,6 +115,24 @@ tat_chart_js <- paste0(
                   return 'Claims: ' + tatCounts[items[0].dataIndex].toLocaleString();
                 }
               }
+            },
+            annotation: {
+              annotations: {
+                sla30: {
+                  type: 'line', yMin: 30, yMax: 30,
+                  borderColor: '#22c55e', borderWidth: 2, borderDash: [6, 4],
+                  label: { display: true, content: '30-day SLA', position: 'end',
+                           backgroundColor: 'rgba(34,197,94,0.1)', color: '#16a34a',
+                           font: { size: 11, weight: '600' }, padding: { x: 6, y: 3 } }
+                },
+                sla90: {
+                  type: 'line', yMin: 90, yMax: 90,
+                  borderColor: '#f59e0b', borderWidth: 2, borderDash: [6, 4],
+                  label: { display: true, content: '90-day SLA', position: 'end',
+                           backgroundColor: 'rgba(245,158,11,0.1)', color: '#b45309',
+                           font: { size: 11, weight: '600' }, padding: { x: 6, y: 3 } }
+                }
+              }
             }
           },
           scales: {
@@ -151,6 +169,17 @@ tat_chart_js <- paste0(
               callbacks: {
                 label: function(c) {
                   return ' ' + c.dataset.label + ': ' + c.parsed.y.toFixed(1) + '%';
+                }
+              }
+            },
+            annotation: {
+              annotations: {
+                target80: {
+                  type: 'line', yMin: 80, yMax: 80,
+                  borderColor: '#22c55e', borderWidth: 2, borderDash: [6, 4],
+                  label: { display: true, content: '80% target (30 days)', position: 'end',
+                           backgroundColor: 'rgba(34,197,94,0.1)', color: '#16a34a',
+                           font: { size: 11, weight: '600' }, padding: { x: 6, y: 3 } }
                 }
               }
             }
@@ -382,6 +411,27 @@ tat_panel_ui <- function() {
       )
     ),
 
+    insight_banner(
+      paste0(
+        tat_summary$pct_after90, "% of claims (",
+        fmt_num(round(tat_summary$n_claims * tat_summary$pct_after90 / 100)),
+        " claims) settled beyond the 90-day SLA — median TAT is ",
+        tat_summary$median_tat, " days."
+      ),
+      sub = paste0(
+        tat_summary$pct_30, "% settled within 30 days vs an 80% benchmark. "
+      ),
+      type = "warning"
+    ),
+
+    div(class = "d-flex justify-content-end gap-2 mb-3",
+      tags$button(type = "button",
+        class = "btn btn-sm btn-outline-secondary",
+        onclick = "showMockAction('Preparing TAT Excel export — the file will download shortly.')",
+        tags$i(class = "bi bi-file-earmark-excel me-1"), "Export"
+      )
+    ),
+
     # AC4 — filters (horizontal bar, indicator-specific)
     .tat_filter_bar(),
 
@@ -395,10 +445,13 @@ tat_panel_ui <- function() {
     tags$h6(class = "ind-section-label", "Monthly Trend (last 12 months)"),
     div(class = "row g-4",
       div(class = "col-12 col-xl-6",
-        .chart_card("TAT Trends", "Min / Median / Max days", "tatTrendChart")),
+        .chart_card("TAT Trends",
+                    "Min / Median / Max days — dashed lines show 30-day and 90-day SLA targets",
+                    "tatTrendChart")),
       div(class = "col-12 col-xl-6",
         .chart_card("Payment Period Distribution",
-                    "Share of claims by settlement window", "tatPctChart"))
+                    "Share of claims by settlement window — dashed line marks the 80% target at 30 days",
+                    "tatPctChart"))
     ),
 
     tags$hr(class = "my-4 border-light"),
@@ -408,7 +461,14 @@ tat_panel_ui <- function() {
     div(class = "card border-0 shadow-sm",
       div(class = "card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3 px-4",
         div(class = "fw-semibold", style = "color:#0f172a;", "TAT by County"),
-        uiOutput("tat_row_count")
+        div(class = "d-flex align-items-center gap-2",
+          uiOutput("tat_row_count"),
+          tags$button(type = "button",
+            class = "btn btn-sm btn-outline-secondary",
+            onclick = "showMockAction('Preparing TAT county Excel export — the file will download shortly.')",
+            tags$i(class = "bi bi-file-earmark-excel me-1"), "Export"
+          )
+        )
       ),
       uiOutput("tat_table_ui"),
       div(class = "card-footer bg-white border-top d-flex justify-content-between align-items-center py-2 px-4",
