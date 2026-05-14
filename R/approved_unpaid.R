@@ -102,83 +102,92 @@ apx_overall_county <- lapply(seq_along(.APX_COUNTIES), function(i) {
 
 # ---- Chart.js head content ---------------------------------------------------
 
-set.seed(321)
-.apx_monthly_val <- round(sample(180:420, 12, replace = TRUE) * 1e6)
-.apx_monthly_cnt <- sample(600:2200, 12, replace = TRUE)
+# Per-fund monthly unpaid data (value + count)
+.apx_fund_monthly <- setNames(
+  lapply(seq_along(c("Overall", .APX_FUNDS)), function(i) {
+    set.seed(i * 71 + 13)
+    list(val = round(sample(40:350, 12, replace = TRUE) * 1e6),
+         cnt = sample(100:1800, 12, replace = TRUE))
+  }),
+  c("Overall", .APX_FUNDS)
+)
 
 apx_chart_js <- paste0(
-  "var apxMonths=",     jsonlite::toJSON(.apx_months),       ";",
-  "var apxMonthlyVal=", jsonlite::toJSON(.apx_monthly_val),  ";",
-  "var apxMonthlyCnt=", jsonlite::toJSON(.apx_monthly_cnt),  ";",
+  "var apxMonths=",   jsonlite::toJSON(.apx_months),          ";",
+  "var apxFundData=", jsonlite::toJSON(.apx_fund_monthly),    ";",
   "
-  var _apxChartsReady = false;
+  var _apxFundCharts = {};
 
-  function initApxCharts() {
-    if (_apxChartsReady || typeof Chart === 'undefined') return;
-
-    var ctx = document.getElementById('apxUnpaidChart');
-    if (ctx) {
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: apxMonths,
-          datasets: [{
-            label: 'Unpaid Claims Value',
-            data: apxMonthlyVal,
-            backgroundColor: 'rgba(220,38,38,0.75)',
-            borderColor: '#dc2626',
-            borderWidth: 1,
-            borderRadius: 4
-          }]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: function(c) {
-                  var v = c.parsed.y;
-                  var s = v >= 1e9 ? 'KES ' + (v/1e9).toFixed(2) + 'B'
-                        : v >= 1e6 ? 'KES ' + (v/1e6).toFixed(1) + 'M'
-                        : 'KES ' + v.toLocaleString();
-                  return ' Value: ' + s;
-                },
-                afterLabel: function(c) {
-                  return ' Count: ' + apxMonthlyCnt[c.dataIndex].toLocaleString();
-                }
+  function initApxFundChart(fund) {
+    if (_apxFundCharts[fund] || typeof Chart === 'undefined') return;
+    var ctx = document.getElementById('apxChart-' + fund);
+    if (!ctx) return;
+    var d = apxFundData[fund];
+    _apxFundCharts[fund] = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: apxMonths,
+        datasets: [{
+          label: 'Unpaid Claims Value',
+          data: d.val,
+          backgroundColor: 'rgba(220,38,38,0.75)',
+          borderColor: '#dc2626',
+          borderWidth: 1,
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(c) {
+                var v = c.parsed.y;
+                return ' Value: ' + (v >= 1e9 ? 'KES ' + (v/1e9).toFixed(2) + 'B'
+                       : v >= 1e6 ? 'KES ' + (v/1e6).toFixed(1) + 'M'
+                       : 'KES ' + v.toLocaleString());
+              },
+              afterLabel: function(c) {
+                return ' Count: ' + d.cnt[c.dataIndex].toLocaleString();
               }
             }
+          }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: 'Created Date', color: '#64748b' },
+            grid: { display: false }, ticks: { color: '#64748b' }
           },
-          scales: {
-            x: {
-              title: { display: true, text: 'Created Date', color: '#64748b' },
-              grid: { display: false }, ticks: { color: '#64748b' }
-            },
-            y: {
-              title: { display: true, text: 'Unpaid Claims Value (KES)', color: '#64748b' },
-              grid: { color: '#f1f5f9' },
-              ticks: {
-                color: '#64748b',
-                callback: function(v) {
-                  return v >= 1e9 ? (v/1e9).toFixed(1) + 'B'
-                       : v >= 1e6 ? (v/1e6).toFixed(0) + 'M' : v;
-                }
+          y: {
+            title: { display: true, text: 'Unpaid Claims Value (KES)', color: '#64748b' },
+            grid: { color: '#f1f5f9' },
+            ticks: {
+              color: '#64748b',
+              callback: function(v) {
+                return v >= 1e9 ? (v/1e9).toFixed(1) + 'B'
+                     : v >= 1e6 ? (v/1e6).toFixed(0) + 'M' : v;
               }
             }
           }
         }
-      });
-    }
-    _apxChartsReady = true;
+      }
+    });
   }
 
-  window.revealApxCharts = initApxCharts;
-
-  /* apx is the default panel — init on page load */
-  document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(initApxCharts, 150);
+  /* Init chart when a tab becomes visible */
+  document.addEventListener('shown.bs.tab', function(e) {
+    var target = e.target.getAttribute('data-bs-target') || '';
+    if (!target.startsWith('#apx-pane-')) return;
+    setTimeout(function() { initApxFundChart(target.replace('#apx-pane-', '')); }, 50);
   });
+
+  /* apx is the default panel — init Overall on page load */
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() { initApxFundChart('Overall'); }, 150);
+  });
+
+  window.revealApxCharts = function() { initApxFundChart('Overall'); };
   "
 )
 
@@ -301,6 +310,31 @@ apx_chart_js <- paste0(
     class = paste("tab-pane fade", if (is_active) "show active" else ""),
     role = "tabpanel",
     div(class = "pt-3",
+      # Cards
+      tags$h6(class = "ind-section-label", "Summary Metrics"),
+      .apx_metrics_row(metrics),
+
+      tags$hr(class = "my-4 border-light"),
+
+      # Chart
+      tags$h6(class = "ind-section-label", "Unpaid Claims Trend"),
+      div(class = "card border-0 shadow-sm mb-4",
+        div(class = "card-header bg-white border-bottom px-4 py-3",
+          div(class = "fw-semibold", style = "color:#0f172a;",
+              "Unpaid Claims Value by Created Date"),
+          div(class = "text-muted", style = "font-size:.82rem;",
+              "Monthly unpaid claim value — hover to see claim count")
+        ),
+        div(class = "card-body px-4 py-3",
+          div(style = "position:relative; height:280px;",
+            tags$canvas(id = paste0("apxChart-", fund))
+          )
+        )
+      ),
+
+      tags$hr(class = "my-4 border-light"),
+
+      # County table
       .apx_county_table(data, fund)
     )
   )
@@ -439,29 +473,6 @@ apx_panel_ui <- function() {
     ),
 
     .apx_filter_bar(),
-
-    # Summary cards
-    tags$h6(class = "ind-section-label", "Summary Metrics"),
-    .apx_metrics_row(apx_overall_metrics),
-
-    tags$hr(class = "my-4 border-light"),
-
-    # Chart — unpaid claims value by created date
-    tags$h6(class = "ind-section-label", "Unpaid Claims Trend"),
-    div(class = "card border-0 shadow-sm mb-4",
-      div(class = "card-header bg-white border-bottom px-4 py-3",
-        div(class = "fw-semibold", style = "color:#0f172a;", "Unpaid Claims Value by Created Date"),
-        div(class = "text-muted", style = "font-size:.82rem;",
-            "Monthly unpaid claim value — hover to see claim count")
-      ),
-      div(class = "card-body px-4 py-3",
-        div(style = "position:relative; height:280px;",
-          tags$canvas(id = "apxUnpaidChart")
-        )
-      )
-    ),
-
-    tags$hr(class = "my-4 border-light"),
 
     div(class = "tab-content",
       .apx_tab_pane("Overall", apx_overall_county, apx_overall_metrics, is_active = TRUE),
