@@ -290,8 +290,8 @@ cancer_chart_js <- paste0(
         tags$tr(
           col_th("County Name",         "180px"),
           col_th("Cumulative Patients"),
-          col_th("Total Cancer Patients"),
-          col_th(HTML("New Patients <sup style='color:#94a3b8;'>*</sup>")),
+          col_th("Patients Treated (Last 3 Months)"),
+          col_th(HTML("New Patients (This Month) <sup style='color:#94a3b8;'>*</sup>")),
           col_th("Amount SHA Paid")
         )
       ),
