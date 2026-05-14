@@ -7,6 +7,8 @@
 
 .AG_BUCKET_LABELS <- c("0–30 days", "31–60 days", "61–90 days", "90+ days")
 .AG_BUCKET_COLORS <- c("#22c55e", "#f59e0b", "#f97316", "#ef4444")
+.AG_LEVELS        <- c("Level 2", "Level 3", "Level 4", "Level 5", "National Referral")
+.ag_months        <- format(seq(as.Date("2025-05-01"), by = "month", length.out = 12), "%b '%y")
 
 # ---- Data --------------------------------------------------------------------
 
@@ -290,6 +292,92 @@ ageing_chart_js <- paste0(
 
 # ---- Public: panel UI --------------------------------------------------------
 
+.ageing_filter_bar <- function() {
+  div(class = "card filter-card border-0 shadow-sm mb-4",
+    div(class = "card-body py-3 px-4",
+      div(class = "row g-3 align-items-end",
+
+        div(class = "col-12",
+          div(class = "filter-section-header",
+            tags$i(class = "bi bi-sliders2"), "Filters"
+          )
+        ),
+
+        # Created Date
+        div(class = "col-12 col-md-2 col-xl-2",
+          div(class = "filter-bar-group",
+            div(class = "filter-bar-label",
+              tags$i(class = "bi bi-calendar3"), "Created Date"),
+            selectInput("ageing_created_month", NULL,
+              choices  = c("All Months" = "",
+                           setNames(.ag_months, .ag_months)),
+              selected = "", width = "100%")
+          )
+        ),
+
+        # Incurred Date
+        div(class = "col-12 col-md-2 col-xl-2",
+          div(class = "filter-bar-group",
+            div(class = "filter-bar-label",
+              tags$i(class = "bi bi-calendar-check"), "Incurred Date"),
+            selectInput("ageing_incurred_month", NULL,
+              choices  = c("All Months" = "",
+                           setNames(.ag_months, .ag_months)),
+              selected = "", width = "100%")
+          )
+        ),
+
+        # County
+        div(class = "col-12 col-md-3 col-xl-2",
+          div(class = "filter-bar-group",
+            div(class = "filter-bar-label",
+              tags$i(class = "bi bi-geo-alt"), "County"),
+            selectInput("ageing_county", NULL,
+              choices  = c("All Counties" = "",
+                           setNames(.AG_COUNTIES, .AG_COUNTIES)),
+              multiple = TRUE, selectize = TRUE, width = "100%")
+          )
+        ),
+
+        # Level
+        div(class = "col-6 col-md-2 col-xl-2",
+          div(class = "filter-bar-group",
+            div(class = "filter-bar-label",
+              tags$i(class = "bi bi-hospital"), "Level"),
+            selectInput("ageing_level", NULL,
+              choices = c("All Levels" = "",
+                          setNames(.AG_LEVELS, .AG_LEVELS)),
+              width = "100%")
+          )
+        ),
+
+        # Facility
+        div(class = "col-6 col-md-2 col-xl-2",
+          div(class = "filter-bar-group",
+            div(class = "filter-bar-label",
+              tags$i(class = "bi bi-building"), "Facility"),
+            selectInput("ageing_facility", NULL,
+              choices = c("All Facilities" = ""), width = "100%")
+          )
+        ),
+
+        # Buttons
+        div(class = "col-12 col-xl-2",
+          div(class = "filter-bar-label", style = "visibility:hidden;", HTML("&nbsp;")),
+          div(class = "d-flex gap-2 justify-content-end",
+            actionButton("ageing_reset",
+              label = tagList(tags$i(class = "bi bi-arrow-counterclockwise"), " Reset"),
+              class = "btn btn-filter-reset", title = "Reset filters"),
+            actionButton("ageing_apply",
+              label = tagList(tags$i(class = "bi bi-funnel-fill me-1"), "Apply Filters"),
+              class = "btn btn-primary btn-filter-apply")
+          )
+        )
+      )
+    )
+  )
+}
+
 ageing_panel_ui <- function() {
   div(class = "container-fluid px-4 py-4",
 
@@ -322,13 +410,7 @@ ageing_panel_ui <- function() {
       type = "danger"
     ),
 
-    div(class = "d-flex justify-content-end gap-2 mb-3",
-      tags$button(type = "button",
-        class = "btn btn-sm btn-outline-secondary",
-        onclick = "showMockAction('Preparing Excel export — the file will download shortly.')",
-        tags$i(class = "bi bi-file-earmark-excel me-1"), "Export"
-      )
-    ),
+    .ageing_filter_bar(),
 
     # Section 1 — Ageing bucket cards
     tags$h6(class = "ind-section-label", "Ageing Buckets"),
@@ -423,5 +505,14 @@ ageing_server <- function(input, output, session) {
 
   output$ageing_pagination <- renderUI({
     make_pagination(min(ageing_page(), total_pages()), total_pages(), "ageing_page_num")
+  })
+
+  observeEvent(input$ageing_reset, {
+    updateSelectInput(session, "ageing_created_month",  selected = "")
+    updateSelectInput(session, "ageing_incurred_month", selected = "")
+    updateSelectInput(session, "ageing_county",         selected = character(0))
+    updateSelectInput(session, "ageing_level",          selected = "")
+    updateSelectInput(session, "ageing_facility",       selected = "")
+    ageing_page(1L)
   })
 }

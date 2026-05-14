@@ -30,6 +30,8 @@ tat_df <- data.frame(
   stringsAsFactors = FALSE
 )
 tat_df$pct_after90 <- round(100 - tat_df$pct_90, 1)
+set.seed(234)
+tat_df$val_claims  <- round(tat_df$n_claims * sample(8000:25000, length(TAT_COUNTIES), replace = TRUE))
 
 tat_summary <- list(
   n_claims    = sum(tat_df$n_claims),
@@ -59,20 +61,35 @@ tat_trend <- data.frame(
   stringsAsFactors = FALSE
 )
 tat_trend$pct_after90 <- 100 - tat_trend$pct_90
+tat_trend$pct_3190   <- round(tat_trend$pct_90 - tat_trend$pct_30, 1)
+
+set.seed(789)
+tat_trend$val_total   <- sample(800:1200, 12, replace = TRUE) * 1e6
+tat_trend$val_30      <- round(tat_trend$val_total * tat_trend$pct_30   / 100)
+tat_trend$val_3190    <- round(tat_trend$val_total * tat_trend$pct_3190 / 100)
+tat_trend$val_after90 <- tat_trend$val_total - tat_trend$val_30 - tat_trend$val_3190
+
+tat_summary$val_total   <- sum(tat_trend$val_total)
+tat_summary$val_30      <- round(tat_summary$val_total * tat_summary$pct_30      / 100)
+tat_summary$val_90      <- round(tat_summary$val_total * tat_summary$pct_90      / 100)
+tat_summary$val_after90 <- round(tat_summary$val_total * tat_summary$pct_after90 / 100)
 
 # ---- Chart.js head content ---------------------------------------------------
 # Exposed as a character string; app.R injects into tags$head().
 
 tat_chart_js <- paste0(
   # 1. Data variables
-  "var tatLabels=",   jsonlite::toJSON(.tat_months),            ";",
-  "var tatCounts=",   jsonlite::toJSON(tat_trend$n_claims),     ";",
-  "var tatMin=",      jsonlite::toJSON(tat_trend$min_tat),      ";",
-  "var tatMedian=",   jsonlite::toJSON(tat_trend$median_tat),   ";",
-  "var tatMax=",      jsonlite::toJSON(tat_trend$max_tat),      ";",
-  "var tatPct30=",    jsonlite::toJSON(tat_trend$pct_30),       ";",
-  "var tatPct90=",    jsonlite::toJSON(tat_trend$pct_90),       ";",
-  "var tatPctAfter=", jsonlite::toJSON(tat_trend$pct_after90),  ";",
+  "var tatLabels=",    jsonlite::toJSON(.tat_months),               ";",
+  "var tatCounts=",    jsonlite::toJSON(tat_trend$n_claims),        ";",
+  "var tatMin=",       jsonlite::toJSON(tat_trend$min_tat),         ";",
+  "var tatMedian=",    jsonlite::toJSON(tat_trend$median_tat),      ";",
+  "var tatMax=",       jsonlite::toJSON(tat_trend$max_tat),         ";",
+  "var tatPct30=",     jsonlite::toJSON(tat_trend$pct_30),          ";",
+  "var tatPct3190=",   jsonlite::toJSON(tat_trend$pct_3190),        ";",
+  "var tatPctAfter=",  jsonlite::toJSON(tat_trend$pct_after90),     ";",
+  "var tatVal30=",     jsonlite::toJSON(tat_trend$val_30),          ";",
+  "var tatVal3190=",   jsonlite::toJSON(tat_trend$val_3190),        ";",
+  "var tatValAfter=",  jsonlite::toJSON(tat_trend$val_after90),     ";",
 
   # 2. Lazy initialisation — charts are created the first time the TAT panel
   #    is revealed so Canvas elements have non-zero dimensions.
@@ -138,7 +155,8 @@ tat_chart_js <- paste0(
           scales: {
             y: { title: { display: true, text: 'Days', color: '#64748b' },
                  grid: { color: '#f1f5f9' }, ticks: { color: '#64748b' } },
-            x: { grid: { display: false }, ticks: { color: '#64748b' } }
+            x: { title: { display: true, text: 'Payment Date', color: '#64748b' },
+                 grid: { display: false }, ticks: { color: '#64748b' } }
           }
         }
       });
@@ -146,17 +164,18 @@ tat_chart_js <- paste0(
 
     var ctx2 = document.getElementById('tatPctChart');
     if (ctx2) {
+      var valArrays = [tatVal30, tatVal3190, tatValAfter];
       new Chart(ctx2, {
-        type: 'line',
+        type: 'bar',
         data: {
           labels: tatLabels,
           datasets: [
-            Object.assign({}, lineBase, { label: '% within 30 days', data: tatPct30,
-              borderColor: '#22c55e', pointBackgroundColor: '#22c55e' }),
-            Object.assign({}, lineBase, { label: '% within 90 days', data: tatPct90,
-              borderColor: '#f59e0b', pointBackgroundColor: '#f59e0b' }),
-            Object.assign({}, lineBase, { label: '% after 90 days',  data: tatPctAfter,
-              borderColor: '#ef4444', pointBackgroundColor: '#ef4444' })
+            { label: '≤30 days',  data: tatPct30,    stack: 'dist',
+              backgroundColor: 'rgba(34,197,94,0.75)',  borderColor: '#22c55e', borderWidth: 1 },
+            { label: '31–90 days', data: tatPct3190,  stack: 'dist',
+              backgroundColor: 'rgba(245,158,11,0.75)', borderColor: '#f59e0b', borderWidth: 1 },
+            { label: '>90 days',       data: tatPctAfter, stack: 'dist',
+              backgroundColor: 'rgba(239,68,68,0.75)',  borderColor: '#ef4444', borderWidth: 1 }
           ]
         },
         options: {
@@ -168,27 +187,20 @@ tat_chart_js <- paste0(
             tooltip: {
               callbacks: {
                 label: function(c) {
-                  return ' ' + c.dataset.label + ': ' + c.parsed.y.toFixed(1) + '%';
+                  var val = valArrays[c.datasetIndex][c.dataIndex];
+                  var valM = (val / 1e6).toFixed(0);
+                  return ' ' + c.dataset.label + ': ' + c.parsed.y.toFixed(1) + '% (KES ' + valM + 'M)';
                 }
               }
             },
-            annotation: {
-              annotations: {
-                target80: {
-                  type: 'line', yMin: 80, yMax: 80,
-                  borderColor: '#22c55e', borderWidth: 2, borderDash: [6, 4],
-                  label: { display: true, content: '80% target (30 days)', position: 'end',
-                           backgroundColor: 'rgba(34,197,94,0.1)', color: '#16a34a',
-                           font: { size: 11, weight: '600' }, padding: { x: 6, y: 3 } }
-                }
-              }
-            }
           },
           scales: {
-            y: { title: { display: true, text: '%', color: '#64748b' },
+            y: { stacked: true, title: { display: true, text: '%', color: '#64748b' },
                  min: 0, max: 100,
-                 grid: { color: '#f1f5f9' }, ticks: { color: '#64748b' } },
-            x: { grid: { display: false }, ticks: { color: '#64748b' } }
+                 grid: { color: '#f1f5f9' }, ticks: { color: '#64748b',
+                   callback: function(v) { return v + '%'; } } },
+            x: { stacked: true, title: { display: true, text: 'Payment Date', color: '#64748b' },
+                 grid: { display: false }, ticks: { color: '#64748b' } }
           }
         }
       });
@@ -205,7 +217,8 @@ tat_chart_js <- paste0(
 # ---- Component builders ------------------------------------------------------
 
 .tat_metric_card <- function(label, value_str, icon_cls, color,
-                             delta, lower_is_better = FALSE, suffix = "") {
+                             delta, lower_is_better = FALSE, suffix = "",
+                             sub_value = NULL) {
   div(class = "col",
     div(class = "card border-0 shadow-sm h-100",
       div(class = "card-body p-4",
@@ -225,6 +238,9 @@ tat_chart_js <- paste0(
         ),
         div(class = "fw-bold lh-sm mb-1",
             style = "font-size:1.5rem; color:#0f172a;", value_str),
+        if (!is.null(sub_value))
+          div(class = "text-muted fw-medium mb-1",
+              style = "font-size:.82rem;", sub_value),
         div(class = "text-uppercase fw-semibold text-muted",
             style = "font-size:.68rem; letter-spacing:.07em;", label)
       )
@@ -239,13 +255,16 @@ tat_chart_js <- paste0(
                        "bi bi-file-earmark-medical-fill", "#0284c7", d$n_claims),
       .tat_metric_card("% Paid within 30 days", paste0(s$pct_30, "%"),
                        "bi bi-check-circle-fill",         "#22c55e",
-                       d$pct_30, suffix = "%"),
+                       d$pct_30, suffix = "%",
+                       sub_value = fmt_currency(s$val_30)),
       .tat_metric_card("% Paid within 90 days", paste0(s$pct_90, "%"),
                        "bi bi-clock-fill",                "#f59e0b",
-                       d$pct_90, suffix = "%"),
+                       d$pct_90, suffix = "%",
+                       sub_value = fmt_currency(s$val_90)),
       .tat_metric_card("% Paid after 90 days",  paste0(s$pct_after90, "%"),
                        "bi bi-x-circle-fill",             "#dc2626",
-                       d$pct_after90, lower_is_better = TRUE, suffix = "%")
+                       d$pct_after90, lower_is_better = TRUE, suffix = "%",
+                       sub_value = fmt_currency(s$val_after90))
     ),
     div(class = "row row-cols-1 row-cols-sm-3 g-3 mt-1",
       .tat_metric_card("Minimum TAT",  paste0(s$min_tat, " days"),
@@ -262,7 +281,7 @@ tat_chart_js <- paste0(
 }
 
 .chart_card <- function(title, subtitle, canvas_id) {
-  div(class = "card border-0 shadow-sm",
+  div(class = "card border-0 shadow-sm h-100",
     div(class = "card-header bg-white border-bottom px-4 py-3",
       div(class = "fw-semibold", style = "color:#0f172a;", title),
       div(class = "text-muted", style = "font-size:.82rem;", subtitle)
@@ -286,13 +305,17 @@ tat_chart_js <- paste0(
     r <- df[i, ]
     tags$tr(
       tags$td(class = "fw-medium", r$county),
-      tags$td(fmt_num(r$n_claims)),
-      tags$td(paste0(r$min_tat,    " d")),
+      tags$td(fmt_currency(r$val_claims)),
       tags$td(paste0(r$median_tat, " d")),
-      tags$td(paste0(r$max_tat,    " d")),
-      tags$td(pct_badge(r$pct_30,      40, 60, higher_is_bad = FALSE)),
-      tags$td(pct_badge(r$pct_90,      70, 80, higher_is_bad = FALSE)),
-      tags$td(pct_badge(r$pct_after90, 20, 30, higher_is_bad = TRUE))
+      tags$td(title = fmt_currency(r$val_claims * r$pct_30      / 100),
+              style = "cursor:default;",
+              pct_badge(r$pct_30,      40, 60, higher_is_bad = FALSE)),
+      tags$td(title = fmt_currency(r$val_claims * r$pct_90      / 100),
+              style = "cursor:default;",
+              pct_badge(r$pct_90,      70, 80, higher_is_bad = FALSE)),
+      tags$td(title = fmt_currency(r$val_claims * r$pct_after90 / 100),
+              style = "cursor:default;",
+              pct_badge(r$pct_after90, 20, 30, higher_is_bad = TRUE))
     )
   })
   div(class = "table-responsive",
@@ -300,11 +323,9 @@ tat_chart_js <- paste0(
       class = "table table-hover table-striped align-middle mb-0",
       tags$thead(class = "table-light",
         tags$tr(
-          col_th("County Name",    "180px"),
-          col_th("No. of Claims"),
-          col_th("Min TAT"),
+          col_th("County Name",  "180px"),
+          col_th("Value of Claims"),
           col_th("Median TAT"),
-          col_th("Max TAT"),
           col_th("% within 30 d"),
           col_th("% within 90 d"),
           col_th("% after 90 d")
@@ -329,12 +350,12 @@ tat_chart_js <- paste0(
           )
         ),
 
-        # Created Date (month selector)
+        # Payment Date (month selector)
         div(class = "col-12 col-md-2 col-xl-2",
           div(class = "filter-bar-group",
             div(class = "filter-bar-label",
-              tags$i(class = "bi bi-calendar3"), "Created Date"),
-            selectInput("tat_created_month", NULL,
+              tags$i(class = "bi bi-calendar3"), "Payment Date"),
+            selectInput("tat_payment_month", NULL,
               choices  = c("All Months" = "",
                            setNames(.tat_months, .tat_months)),
               selected = "",
@@ -424,14 +445,6 @@ tat_panel_ui <- function() {
       type = "warning"
     ),
 
-    div(class = "d-flex justify-content-end gap-2 mb-3",
-      tags$button(type = "button",
-        class = "btn btn-sm btn-outline-secondary",
-        onclick = "showMockAction('Preparing TAT Excel export — the file will download shortly.')",
-        tags$i(class = "bi bi-file-earmark-excel me-1"), "Export"
-      )
-    ),
-
     # AC4 — filters (horizontal bar, indicator-specific)
     .tat_filter_bar(),
 
@@ -446,11 +459,11 @@ tat_panel_ui <- function() {
     div(class = "row g-4",
       div(class = "col-12 col-xl-6",
         .chart_card("TAT Trends",
-                    "Min / Median / Max days — dashed lines show 30-day and 90-day SLA targets",
+                    "Min / Median / Max days by payment date — dashed lines show 30-day and 90-day SLA targets",
                     "tatTrendChart")),
       div(class = "col-12 col-xl-6",
         .chart_card("Payment Period Distribution",
-                    "Share of claims by settlement window — dashed line marks the 80% target at 30 days",
+                    "Share of claim value by settlement window (by payment date)",
                     "tatPctChart"))
     ),
 
@@ -536,7 +549,7 @@ tat_server <- function(input, output, session) {
   })
 
   observeEvent(input$tat_reset, {
-    updateSelectInput(session, "tat_created_month", selected = "")
+    updateSelectInput(session, "tat_payment_month", selected = "")
     updateSelectInput(session, "tat_county",        selected = character(0))
     updateSelectInput(session, "tat_level",         selected = "")
     updateSelectInput(session, "tat_facility",      selected = "")

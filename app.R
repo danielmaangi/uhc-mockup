@@ -378,7 +378,10 @@ app_js <- HTML("
   Shiny.addCustomMessageHandler('setActiveNav', function(id) {
     $('.sidebar-nav-item').removeClass('active');
     $('#nav-' + id).addClass('active');
-    /* Initialise Chart.js charts when TAT panel first becomes visible */
+    /* Initialise Chart.js charts when panel first becomes visible */
+    if (id === 'apx' && typeof window.revealApxCharts === 'function') {
+      setTimeout(window.revealApxCharts, 80);
+    }
     if (id === 'tat' && typeof window.revealTatCharts === 'function') {
       setTimeout(window.revealTatCharts, 80);
     }
@@ -475,6 +478,7 @@ ui <- page_sidebar(
     tags$script(src = "https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"),
     tags$script(src = "https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.1.0/dist/chartjs-plugin-annotation.min.js"),
     tags$style(app_css),
+    tags$script(HTML(apx_chart_js)),      # from approved_unpaid.R
     tags$script(HTML(tat_chart_js)),      # from claims_tat.R
     tags$script(HTML(cancer_chart_js)),  # from cancer_payments.R
     tags$script(HTML(ageing_chart_js)),  # from claims_ageing.R

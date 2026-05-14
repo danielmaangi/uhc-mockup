@@ -28,19 +28,53 @@ cancer_county_df <- data.frame(
   amount_paid          = runif(length(CANCER_COUNTIES), 2e5, 8e6),
   stringsAsFactors = FALSE
 )
+cancer_county_df$submitted_value <- cancer_county_df$amount_paid *
+  runif(length(CANCER_COUNTIES), 1.15, 1.55)
+cancer_county_df$submitted_count <- round(
+  cancer_county_df$total_patients * runif(length(CANCER_COUNTIES), 0.9, 1.3))
+
+# ICD-11 cancer types
+.cnc_icd_types <- data.frame(
+  icd_code    = c("2B5A","2B4Y","2C0Y","2B5Z","2B33","2C6Y","2C1Y","2B93","2A00","2B9Y"),
+  cancer_type = c("Breast Carcinoma","Cervical Carcinoma","Prostate Carcinoma",
+                  "Non-Hodgkin Lymphoma","Colorectal Carcinoma","Leukaemia",
+                  "Thyroid Carcinoma","Kaposi Sarcoma","Oesophageal Carcinoma",
+                  "Other Carcinomas"),
+  stringsAsFactors = FALSE
+)
+set.seed(55)
+cancer_icd_df <- .cnc_icd_types
+cancer_icd_df$current_count    <- sample(80:950,  10, replace = TRUE)
+cancer_icd_df$new_count         <- sample(10:120,  10, replace = TRUE)
+cancer_icd_df$submitted_value   <- round(runif(10, 8e5, 12e6))
+cancer_icd_df$amount_paid       <- round(cancer_icd_df$submitted_value *
+                                          runif(10, 0.68, 0.93))
+
+# Top 5 ICD per county (used as hover tooltip on county table)
+cancer_county_df$top_icd_tooltip <- sapply(seq_len(nrow(cancer_county_df)), function(i) {
+  set.seed(i * 41)
+  cnts <- sample(10:200, 10, replace = TRUE)
+  ord  <- order(cnts, decreasing = TRUE)[1:5]
+  paste0("Top 5 Cancer Types:\n",
+         paste(seq_len(5), ". ", .cnc_icd_types$cancer_type[ord],
+               " (", cnts[ord], ")", sep = "", collapse = "\n"))
+})
 
 cancer_summary <- list(
-  total_ever   = sum(cancer_county_df$cumulative_patients),
-  unique_3m    = as.integer(round(sum(cancer_county_df$total_patients) * 0.72)),
-  new_month    = sum(cancer_county_df$new_patients),
-  amount_paid  = sum(cancer_county_df$amount_paid)
+  total_ever       = sum(cancer_county_df$cumulative_patients),
+  unique_3m        = as.integer(round(sum(cancer_county_df$total_patients) * 0.72)),
+  new_month        = sum(cancer_county_df$new_patients),
+  amount_paid      = sum(cancer_county_df$amount_paid),
+  submitted_value  = sum(cancer_county_df$submitted_value),
+  submitted_count  = sum(cancer_county_df$submitted_count)
 )
 
 cancer_deltas <- list(
-  total_ever  = +312L,
-  unique_3m   = +143L,
-  new_month   = +28L,
-  amount_paid = +1.24e6
+  total_ever      = +312L,
+  unique_3m       = +143L,
+  new_month       = +28L,
+  amount_paid     = +1.24e6,
+  submitted_value = +2.1e6
 )
 
 # Monthly trend (12 months)
@@ -85,12 +119,12 @@ cancer_chart_js <- paste0(
           labels: cncLabels,
           datasets: [
             Object.assign({}, lineBase, {
-              label: 'Total patients',
+              label: 'Currently on Treatment',
               data: cncUnique,
               borderColor: '#7c3aed', pointBackgroundColor: '#7c3aed'
             }),
             Object.assign({}, lineBase, {
-              label: 'New patients',
+              label: 'New on Treatment',
               data: cncNew,
               borderColor: '#ec4899', pointBackgroundColor: '#ec4899',
               borderDash: [5, 3]
@@ -131,12 +165,12 @@ cancer_chart_js <- paste0(
           labels: cncLabels,
           datasets: [
             Object.assign({}, lineBase, {
-              label: 'Total amount (KES M)',
+              label: 'Total Amount (KES M)',
               data: cncTotalAmt,
               borderColor: '#0891b2', pointBackgroundColor: '#0891b2'
             }),
             Object.assign({}, lineBase, {
-              label: 'New patients amount (KES M)',
+              label: 'New on Treatment Amount (KES M)',
               data: cncNewAmt,
               borderColor: '#f59e0b', pointBackgroundColor: '#f59e0b',
               borderDash: [5, 3]
@@ -174,14 +208,50 @@ cancer_chart_js <- paste0(
     _cncChartsReady = true;
   }
 
-  window.revealCancerCharts = initCancerCharts;
+  /* ---- Sortable static tables ---- */
+  function initSortableTables() {
+    document.querySelectorAll('table[data-sortable]').forEach(function(tbl) {
+      tbl.querySelectorAll('thead th').forEach(function(th, colIdx) {
+        th.style.cursor = 'pointer';
+        th.addEventListener('click', function() {
+          var tbody = tbl.querySelector('tbody');
+          var rows  = Array.from(tbody.querySelectorAll('tr'));
+          var asc   = th.dataset.sortDir !== 'asc';
+          rows.sort(function(a, b) {
+            var av = a.cells[colIdx] ? a.cells[colIdx].textContent.trim() : '';
+            var bv = b.cells[colIdx] ? b.cells[colIdx].textContent.trim() : '';
+            var an = parseFloat(av.replace(/[^0-9.-]/g, ''));
+            var bn = parseFloat(bv.replace(/[^0-9.-]/g, ''));
+            if (!isNaN(an) && !isNaN(bn)) return asc ? an - bn : bn - an;
+            return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+          });
+          tbl.querySelectorAll('thead th').forEach(function(h) {
+            h.dataset.sortDir = '';
+            var ic = h.querySelector('.sort-icon');
+            if (ic) ic.className = 'bi bi-chevron-expand ms-1 sort-icon';
+          });
+          th.dataset.sortDir = asc ? 'asc' : 'desc';
+          var ic = th.querySelector('.sort-icon');
+          if (ic) ic.className = 'bi bi-chevron-' + (asc ? 'up' : 'down') + ' ms-1 sort-icon';
+          rows.forEach(function(r) { tbody.appendChild(r); });
+        });
+      });
+    });
+  }
+
+  window.revealCancerCharts = function() {
+    initCancerCharts();
+    initSortableTables();
+  };
+
+  document.addEventListener('DOMContentLoaded', initSortableTables);
   "
 )
 
 # ---- Component builders ------------------------------------------------------
 
 .cnc_metric_card <- function(label, value_str, icon_cls, color,
-                             delta, delta_fmt = fmt_num) {
+                             delta, delta_fmt = fmt_num, tooltip = NULL) {
   delta_val  <- delta_fmt(abs(delta))
   is_pos     <- delta > 0
   color_d    <- if (is_pos) "#16a34a" else "#dc2626"
@@ -191,6 +261,8 @@ cancer_chart_js <- paste0(
   div(class = "col",
     div(class = "card border-0 shadow-sm h-100",
       div(class = "card-body p-4",
+        title = tooltip,
+        style = if (!is.null(tooltip)) "cursor:default;" else NULL,
         div(class = "d-flex justify-content-between align-items-start mb-3",
           div(
             class = "rounded-3 d-flex align-items-center justify-content-center flex-shrink-0",
@@ -219,30 +291,37 @@ cancer_chart_js <- paste0(
 }
 
 .cnc_cards_ui <- function(s, d) {
-  div(class = "row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3",
+  div(class = "row row-cols-1 row-cols-sm-2 row-cols-xl-5 g-3",
     .cnc_metric_card(
-      "Cumulative patients treated",
+      "Submitted Claims",
+      fmt_currency(s$submitted_value),
+      "bi bi-send-fill", "#0284c7",
+      d$submitted_value, delta_fmt = fmt_currency,
+      tooltip = paste0("Count: ", fmt_num(s$submitted_count), " claims")
+    ),
+    .cnc_metric_card(
+      "Amount Paid by SHA",
+      fmt_currency(s$amount_paid),
+      "bi bi-cash-stack", "#0891b2",
+      d$amount_paid, delta_fmt = fmt_currency
+    ),
+    .cnc_metric_card(
+      "Cumulative (Ever Treated)",
       fmt_num(s$total_ever),
       "bi bi-person-check-fill", "#059669",
       d$total_ever
     ),
     .cnc_metric_card(
-      "Total patients treated (last 3 months)",
+      "Currently on Treatment (Last 3 Months)",
       fmt_num(s$unique_3m),
       "bi bi-people-fill", "#7c3aed",
       d$unique_3m
     ),
     .cnc_metric_card(
-      "New patients treated this month",
+      "New on Treatment",
       fmt_num(s$new_month),
       "bi bi-person-plus-fill", "#ec4899",
       d$new_month
-    ),
-    .cnc_metric_card(
-      "Amount paid by SHA",
-      fmt_currency(s$amount_paid),
-      "bi bi-cash-stack", "#0891b2",
-      d$amount_paid, delta_fmt = fmt_currency
     )
   )
 }
@@ -266,6 +345,37 @@ cancer_chart_js <- paste0(
   )
 }
 
+.build_icd_table <- function(df) {
+  rows <- lapply(seq_len(nrow(df)), function(i) {
+    r <- df[i, ]
+    tags$tr(
+      tags$td(tags$code(r$icd_code)),
+      tags$td(class = "fw-medium", r$cancer_type),
+      tags$td(fmt_num(r$current_count)),
+      tags$td(fmt_num(r$new_count)),
+      tags$td(fmt_currency(r$submitted_value)),
+      tags$td(fmt_currency(r$amount_paid))
+    )
+  })
+  div(class = "table-responsive",
+    tags$table(
+      class = "table table-hover table-striped align-middle mb-0",
+      `data-sortable` = "true",
+      tags$thead(class = "table-light",
+        tags$tr(
+          col_th("ICD-11 Code",                   "100px"),
+          col_th("Cancer Type",                   "200px"),
+          col_th("Currently on Treatment"),
+          col_th("New on Treatment"),
+          col_th("Submitted Value"),
+          col_th("Amount Paid")
+        )
+      ),
+      tags$tbody(do.call(tagList, rows))
+    )
+  )
+}
+
 .build_cnc_table <- function(df) {
   if (nrow(df) == 0) {
     return(div(class = "text-center text-muted p-5",
@@ -276,7 +386,12 @@ cancer_chart_js <- paste0(
   rows <- lapply(seq_len(nrow(df)), function(i) {
     r <- df[i, ]
     tags$tr(
-      tags$td(class = "fw-medium", r$county),
+      tags$td(class = "fw-medium",
+        title = r$top_icd_tooltip, style = "cursor:default;",
+        r$county,
+        tags$i(class = "bi bi-info-circle ms-1",
+               style = "font-size:.7rem; color:#94a3b8;")
+      ),
       tags$td(fmt_num(r$cumulative_patients)),
       tags$td(fmt_num(r$total_patients)),
       tags$td(fmt_num(r$new_patients)),
@@ -288,11 +403,11 @@ cancer_chart_js <- paste0(
       class = "table table-hover table-striped align-middle mb-0",
       tags$thead(class = "table-light",
         tags$tr(
-          col_th("County Name",         "180px"),
-          col_th("Cumulative Patients"),
-          col_th("Patients Treated (Last 3 Months)"),
-          col_th(HTML("New Patients (This Month) <sup style='color:#94a3b8;'>*</sup>")),
-          col_th("Amount SHA Paid")
+          col_th("County Name",                    "180px"),
+          col_th("Cumulative (Ever Treated)"),
+          col_th("Currently on Treatment (Last 3M)"),
+          col_th("New on Treatment"),
+          col_th("Amount Paid by SHA")
         )
       ),
       tags$tbody(do.call(tagList, rows))
@@ -326,8 +441,21 @@ cancer_chart_js <- paste0(
           )
         ),
 
+        # Incurred Date
+        div(class = "col-12 col-md-2 col-xl-2",
+          div(class = "filter-bar-group",
+            div(class = "filter-bar-label",
+              tags$i(class = "bi bi-calendar-check"), "Incurred Date"),
+            selectInput("cnc_incurred_month", NULL,
+              choices  = c("All Months" = "",
+                           setNames(.cancer_months, .cancer_months)),
+              selected = "",
+              width    = "100%")
+          )
+        ),
+
         # County
-        div(class = "col-12 col-md-3 col-xl-3",
+        div(class = "col-12 col-md-3 col-xl-2",
           div(class = "filter-bar-group",
             div(class = "filter-bar-label",
               tags$i(class = "bi bi-geo-alt"), "County"),
@@ -351,7 +479,7 @@ cancer_chart_js <- paste0(
         ),
 
         # Facility
-        div(class = "col-6 col-md-3 col-xl-3",
+        div(class = "col-6 col-md-2 col-xl-2",
           div(class = "filter-bar-group",
             div(class = "filter-bar-label",
               tags$i(class = "bi bi-building"), "Facility"),
@@ -397,23 +525,16 @@ cancer_panel_ui <- function() {
     insight_banner(
       paste0(
         fmt_num(cancer_summary$new_month),
-        " new patients received SHA-funded chemotherapy this month. ",
-        "Total SHA spend this period: ", fmt_currency(cancer_summary$amount_paid), "."
+        " patients are new on treatment this month. ",
+        "Submitted claims: ", fmt_currency(cancer_summary$submitted_value),
+        " — SHA paid ", fmt_currency(cancer_summary$amount_paid), "."
       ),
       sub = paste0(
-        "Cumulative treated: ", fmt_num(cancer_summary$total_ever), " patients ", ". ",
-        "Treated (last 3 months): ", fmt_num(cancer_summary$unique_3m), " patients ", ". ",
-        "New patients: ", fmt_num(cancer_summary$new_month), " patients."
+        "Cumulative (ever treated): ", fmt_num(cancer_summary$total_ever), ". ",
+        "Currently on treatment (last 3 months): ", fmt_num(cancer_summary$unique_3m), ". ",
+        "New on treatment: ", fmt_num(cancer_summary$new_month), "."
       ),
       type = "info"
-    ),
-
-    div(class = "d-flex justify-content-end gap-2 mb-3",
-      tags$button(type = "button",
-        class = "btn btn-sm btn-outline-secondary",
-        onclick = "showMockAction('Preparing Excel export — the file will download shortly.')",
-        tags$i(class = "bi bi-file-earmark-excel me-1"), "Export"
-      )
     ),
 
     # AC4 — filters
@@ -430,20 +551,34 @@ cancer_panel_ui <- function() {
     div(class = "row g-4",
       div(class = "col-12 col-xl-6",
         .cnc_chart_card(
-          "Cancer Patient Trends",
-          "Total patients vs new patients SHA paid for",
+          "Treatment Trends",
+          "Currently on Treatment vs New on Treatment",
           "cncVolumeChart",
-          note = "<sup>*</sup> <strong>New patients:</strong> SHA is paying for chemotherapy treatment for the very first time in that month."
+          note = "<sup>*</sup> <strong>New on Treatment:</strong> SHA is paying for chemotherapy for the very first time in that month."
         )
       ),
       div(class = "col-12 col-xl-6",
         .cnc_chart_card(
           "Payment Amount Trends",
-          "Total amount vs amount paid for new patients (KES M)",
+          "Total amount vs New on Treatment amount (KES M)",
           "cncAmountChart",
-          note = "<sup>*</sup> <strong>New patients:</strong> SHA is paying for chemotherapy treatment for the very first time in that month."
+          note = "<sup>*</sup> <strong>New on Treatment:</strong> SHA is paying for chemotherapy for the very first time in that month."
         )
       )
+    ),
+
+    tags$hr(class = "my-4 border-light"),
+
+    # ICD-11 cancer types table
+    tags$h6(class = "ind-section-label", "Currently on Treatment by Cancer Type (ICD-11)"),
+    div(class = "card border-0 shadow-sm mb-4",
+      div(class = "card-header bg-white border-bottom px-4 py-3",
+        div(class = "fw-semibold", style = "color:#0f172a;",
+            "Cancer Types — Currently on Treatment"),
+        div(class = "text-muted", style = "font-size:.82rem;",
+            "Click any column header to sort")
+      ),
+      .build_icd_table(cancer_icd_df)
     ),
 
     tags$hr(class = "my-4 border-light"),
@@ -534,10 +669,11 @@ cancer_server <- function(input, output, session) {
   })
 
   observeEvent(input$cnc_reset, {
-    updateSelectInput(session, "cnc_created_month", selected = "")
-    updateSelectInput(session, "cnc_county",        selected = character(0))
-    updateSelectInput(session, "cnc_level",         selected = "")
-    updateSelectInput(session, "cnc_facility",      selected = "")
+    updateSelectInput(session, "cnc_created_month",  selected = "")
+    updateSelectInput(session, "cnc_incurred_month", selected = "")
+    updateSelectInput(session, "cnc_county",         selected = character(0))
+    updateSelectInput(session, "cnc_level",          selected = "")
+    updateSelectInput(session, "cnc_facility",       selected = "")
     cnc_page(1L)
   })
 }
