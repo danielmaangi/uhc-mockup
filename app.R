@@ -6,6 +6,7 @@ source("R/helpers.R")
 source("R/approved_unpaid.R")
 source("R/claims_tat.R")
 source("R/cancer_payments.R")
+source("R/claims_ageing.R")
 
 # ==============================================================================
 # NAVIGATION DEFINITION
@@ -18,6 +19,8 @@ INDICATORS <- list(
        icon = "bi-file-earmark-check", category = "Claim Flow Analysis"),
   list(id = "tat", label = "Claims TAT",
        icon = "bi-stopwatch",          category = "Claim Flow Analysis"),
+  list(id = "age", label = "Claims Ageing Report",
+       icon = "bi-hourglass-split",    category = "Claim Flow Analysis"),
   list(id = "cnc", label = "SHA Cancer Treatment Payments",
        icon = "bi-heart-pulse-fill",   category = "Health Services")
 )
@@ -366,6 +369,9 @@ app_js <- HTML("
     if (id === 'cnc' && typeof window.revealCancerCharts === 'function') {
       setTimeout(window.revealCancerCharts, 80);
     }
+    if (id === 'age' && typeof window.revealAgeingCharts === 'function') {
+      setTimeout(window.revealAgeingCharts, 80);
+    }
   });
 
   /* ── County expand / collapse (Approved vs Unpaid) ─────────────────── */
@@ -452,8 +458,9 @@ ui <- page_sidebar(
               href = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"),
     tags$script(src = "https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"),
     tags$style(app_css),
-    tags$script(HTML(tat_chart_js)),     # from claims_tat.R
-    tags$script(HTML(cancer_chart_js)), # from cancer_payments.R
+    tags$script(HTML(tat_chart_js)),      # from claims_tat.R
+    tags$script(HTML(cancer_chart_js)),  # from cancer_payments.R
+    tags$script(HTML(ageing_chart_js)),  # from claims_ageing.R
     tags$script(app_js)
   ),
 
@@ -464,6 +471,7 @@ ui <- page_sidebar(
     selected = "apx",
     tabPanel("apx", apx_panel_ui()),
     tabPanel("tat", tat_panel_ui()),
+    tabPanel("age", ageing_panel_ui()),
     tabPanel("cnc", cancer_panel_ui())
   )
 )
@@ -496,6 +504,7 @@ server <- function(input, output, session) {
   # Delegate to each indicator's server function
   apx_server(input, output, session)
   tat_server(input, output, session)
+  ageing_server(input, output, session)
   cancer_server(input, output, session)
 }
 
