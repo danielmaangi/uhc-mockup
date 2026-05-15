@@ -87,124 +87,168 @@ cancer_trend <- data.frame(
   month           = .cancer_months,
   unique_patients = c(920, 945, 970, 958, 990, 1020, 1045, 1060, 1080, 1100, 1125, 1148),
   new_patients    = c(112, 118, 105, 121, 130, 115,  128,  140,  132,  145,  138,  152),
-  total_amount    = c(4.1, 4.3, 4.2, 4.5, 4.6, 4.8, 5.0, 5.1, 5.3, 5.5, 5.6, 5.8) * 1e6,
-  new_amount      = c(0.9, 1.0, 0.95, 1.05, 1.1, 1.0, 1.15, 1.2, 1.1, 1.25, 1.2, 1.35) * 1e6,
   stringsAsFactors = FALSE
+)
+
+# Weekly trend (12 weeks)
+.cancer_weeks <- format(
+  rev(seq(as.Date("2026-05-15"), by = "-1 week", length.out = 12)), "%d %b '%y"
+)
+
+cancer_trend_weekly <- data.frame(
+  week            = .cancer_weeks,
+  unique_patients = c(262, 268, 255, 274, 280, 277, 285, 291, 296, 302, 298, 305),
+  new_patients    = c(30,  32,  27,  35,  38,  33,  36,  40,  37,  43,  39,  46),
+  stringsAsFactors = FALSE
+)
+
+# Patient count breakdown by gender x age group
+.cancer_age_groups <- c("0–14", "15–24", "25–39", "40–59", "60+")
+
+cancer_gender_age <- list(
+  current = list(
+    male   = c(42L,  118L, 312L, 498L, 378L),
+    female = c(31L,  185L, 567L, 621L, 294L)
+  ),
+  new = list(
+    male   = c(8L,   24L,  58L,  96L,  72L),
+    female = c(5L,   35L,  112L, 130L, 54L)
+  )
 )
 
 # ---- Chart.js head content ---------------------------------------------------
 
 cancer_chart_js <- paste0(
-  "var cncLabels=",      jsonlite::toJSON(.cancer_months),                ";",
-  "var cncUnique=",      jsonlite::toJSON(cancer_trend$unique_patients),  ";",
-  "var cncNew=",         jsonlite::toJSON(cancer_trend$new_patients),     ";",
-  "var cncTotalAmt=",    jsonlite::toJSON(cancer_trend$total_amount / 1e6), ";",
-  "var cncNewAmt=",      jsonlite::toJSON(cancer_trend$new_amount / 1e6),   ";",
+  "var cncLabels=",         jsonlite::toJSON(.cancer_months),                       ";",
+  "var cncWeekLabels=",     jsonlite::toJSON(.cancer_weeks),                        ";",
+  "var cncUnique=",         jsonlite::toJSON(cancer_trend$unique_patients),         ";",
+  "var cncNew=",            jsonlite::toJSON(cancer_trend$new_patients),            ";",
+  "var cncUniqueWeekly=",   jsonlite::toJSON(cancer_trend_weekly$unique_patients),  ";",
+  "var cncNewWeekly=",      jsonlite::toJSON(cancer_trend_weekly$new_patients),     ";",
+  "var cncAgeGroups=",      jsonlite::toJSON(.cancer_age_groups),                   ";",
+  "var cncCurrentMale=",    jsonlite::toJSON(cancer_gender_age$current$male),   ";",
+  "var cncCurrentFemale=",  jsonlite::toJSON(cancer_gender_age$current$female), ";",
+  "var cncNewMale=",        jsonlite::toJSON(cancer_gender_age$new$male),       ";",
+  "var cncNewFemale=",      jsonlite::toJSON(cancer_gender_age$new$female),     ";",
 
   "
   var _cncChartsReady = false;
+  var _cncVolumeChart = null;
+  var _cncAmountChart = null;
+
+  function _initCncVolumeChart(period) {
+    var labels = period === 'weekly' ? cncWeekLabels : cncLabels;
+    var unique = period === 'weekly' ? cncUniqueWeekly : cncUnique;
+    var newPat = period === 'weekly' ? cncNewWeekly   : cncNew;
+    var ctx    = document.getElementById('cncVolumeChart');
+    if (!ctx) return;
+    if (_cncVolumeChart) { _cncVolumeChart.destroy(); _cncVolumeChart = null; }
+    var lineBase = { tension: 0.35, fill: false,
+                     pointRadius: 4, pointHoverRadius: 6, borderWidth: 2 };
+    _cncVolumeChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          Object.assign({}, lineBase, {
+            label: 'Currently on Treatment',
+            data: unique,
+            borderColor: '#7c3aed', pointBackgroundColor: '#7c3aed'
+          }),
+          Object.assign({}, lineBase, {
+            label: 'New on Treatment',
+            data: newPat,
+            borderColor: '#ec4899', pointBackgroundColor: '#ec4899',
+            borderDash: [5, 3]
+          })
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top',
+            labels: { usePointStyle: true, pointStyleWidth: 10, boxHeight: 6 } },
+          tooltip: {
+            callbacks: {
+              afterBody: function(items) {
+                var idx = items[0].dataIndex;
+                var pct = ((newPat[idx] / unique[idx]) * 100).toFixed(1);
+                return 'New as % of total: ' + pct + '%';
+              }
+            }
+          }
+        },
+        scales: {
+          y: { title: { display: true, text: 'Patients', color: '#64748b' },
+               grid: { color: '#f1f5f9' }, ticks: { color: '#64748b' } },
+          x: { grid: { display: false }, ticks: { color: '#64748b' } }
+        }
+      }
+    });
+  }
+
+  function _initCncAmountChart(group) {
+    var male   = group === 'current' ? cncCurrentMale   : cncNewMale;
+    var female = group === 'current' ? cncCurrentFemale : cncNewFemale;
+    var ctx    = document.getElementById('cncAmountChart');
+    if (!ctx) return;
+    if (_cncAmountChart) { _cncAmountChart.destroy(); _cncAmountChart = null; }
+    _cncAmountChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: cncAgeGroups,
+        datasets: [
+          { label: 'Male',   data: male,
+            backgroundColor: '#3b82f680', borderColor: '#3b82f6',
+            borderWidth: 1, borderRadius: 4 },
+          { label: 'Female', data: female,
+            backgroundColor: '#ec489980', borderColor: '#ec4899',
+            borderWidth: 1, borderRadius: 4 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top',
+            labels: { usePointStyle: true, pointStyleWidth: 10, boxHeight: 6 } },
+          tooltip: {
+            callbacks: {
+              label: function(c) {
+                return ' ' + c.dataset.label + ': ' + c.parsed.y.toLocaleString() + ' patients';
+              }
+            }
+          }
+        },
+        scales: {
+          y: { title: { display: true, text: 'Patients', color: '#64748b' },
+               grid: { color: '#f1f5f9' }, ticks: { color: '#64748b' } },
+          x: { grid: { display: false }, ticks: { color: '#64748b' } }
+        }
+      }
+    });
+  }
+
+  window.cncSetVolumePeriod = function(period, btn) {
+    document.querySelectorAll('.cnc-vol-toggle').forEach(function(b) {
+      b.classList.remove('active');
+    });
+    btn.classList.add('active');
+    _initCncVolumeChart(period);
+  };
+
+  window.cncSetAmountGroup = function(group, btn) {
+    document.querySelectorAll('.cnc-amt-toggle').forEach(function(b) {
+      b.classList.remove('active');
+    });
+    btn.classList.add('active');
+    _initCncAmountChart(group);
+  };
 
   function initCancerCharts() {
     if (_cncChartsReady || typeof Chart === 'undefined') return;
-
-    var lineBase = { tension: 0.35, fill: false,
-                     pointRadius: 4, pointHoverRadius: 6, borderWidth: 2 };
-
-    /* ---- Chart 1: Patient Volume ---- */
-    var ctx1 = document.getElementById('cncVolumeChart');
-    if (ctx1) {
-      new Chart(ctx1, {
-        type: 'line',
-        data: {
-          labels: cncLabels,
-          datasets: [
-            Object.assign({}, lineBase, {
-              label: 'Currently on Treatment',
-              data: cncUnique,
-              borderColor: '#7c3aed', pointBackgroundColor: '#7c3aed'
-            }),
-            Object.assign({}, lineBase, {
-              label: 'New on Treatment',
-              data: cncNew,
-              borderColor: '#ec4899', pointBackgroundColor: '#ec4899',
-              borderDash: [5, 3]
-            })
-          ]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          interaction: { mode: 'index', intersect: false },
-          plugins: {
-            legend: { position: 'top',
-              labels: { usePointStyle: true, pointStyleWidth: 10, boxHeight: 6 } },
-            tooltip: {
-              callbacks: {
-                afterBody: function(items) {
-                  var idx = items[0].dataIndex;
-                  var pct = ((cncNew[idx] / cncUnique[idx]) * 100).toFixed(1);
-                  return 'New as % of total: ' + pct + '%';
-                }
-              }
-            }
-          },
-          scales: {
-            y: { title: { display: true, text: 'Patients', color: '#64748b' },
-                 grid: { color: '#f1f5f9' }, ticks: { color: '#64748b' } },
-            x: { grid: { display: false }, ticks: { color: '#64748b' } }
-          }
-        }
-      });
-    }
-
-    /* ---- Chart 2: Payment Amount ---- */
-    var ctx2 = document.getElementById('cncAmountChart');
-    if (ctx2) {
-      new Chart(ctx2, {
-        type: 'line',
-        data: {
-          labels: cncLabels,
-          datasets: [
-            Object.assign({}, lineBase, {
-              label: 'Total Amount (KES M)',
-              data: cncTotalAmt,
-              borderColor: '#0891b2', pointBackgroundColor: '#0891b2'
-            }),
-            Object.assign({}, lineBase, {
-              label: 'New on Treatment Amount (KES M)',
-              data: cncNewAmt,
-              borderColor: '#f59e0b', pointBackgroundColor: '#f59e0b',
-              borderDash: [5, 3]
-            })
-          ]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          interaction: { mode: 'index', intersect: false },
-          plugins: {
-            legend: { position: 'top',
-              labels: { usePointStyle: true, pointStyleWidth: 10, boxHeight: 6 } },
-            tooltip: {
-              callbacks: {
-                label: function(c) {
-                  return ' ' + c.dataset.label + ': KES ' + c.parsed.y.toFixed(2) + 'M';
-                },
-                afterBody: function(items) {
-                  var idx = items[0].dataIndex;
-                  var pct = ((cncNewAmt[idx] / cncTotalAmt[idx]) * 100).toFixed(1);
-                  return 'New patients share: ' + pct + '%';
-                }
-              }
-            }
-          },
-          scales: {
-            y: { title: { display: true, text: 'KES (M)', color: '#64748b' },
-                 grid: { color: '#f1f5f9' }, ticks: { color: '#64748b' } },
-            x: { grid: { display: false }, ticks: { color: '#64748b' } }
-          }
-        }
-      });
-    }
-
+    _initCncVolumeChart('monthly');
+    _initCncAmountChart('current');
     _cncChartsReady = true;
   }
 
@@ -291,20 +335,7 @@ cancer_chart_js <- paste0(
 }
 
 .cnc_cards_ui <- function(s, d) {
-  div(class = "row row-cols-1 row-cols-sm-2 row-cols-xl-5 g-3",
-    .cnc_metric_card(
-      "Submitted Claims",
-      fmt_currency(s$submitted_value),
-      "bi bi-send-fill", "#0284c7",
-      d$submitted_value, delta_fmt = fmt_currency,
-      tooltip = paste0("Count: ", fmt_num(s$submitted_count), " claims")
-    ),
-    .cnc_metric_card(
-      "Amount Paid by SHA",
-      fmt_currency(s$amount_paid),
-      "bi bi-cash-stack", "#0891b2",
-      d$amount_paid, delta_fmt = fmt_currency
-    ),
+  div(class = "row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-3",
     .cnc_metric_card(
       "Cumulative (Ever Treated)",
       fmt_num(s$total_ever),
@@ -322,6 +353,12 @@ cancer_chart_js <- paste0(
       fmt_num(s$new_month),
       "bi bi-person-plus-fill", "#ec4899",
       d$new_month
+    ),
+    .cnc_metric_card(
+      "Amount Paid by SHA",
+      fmt_currency(s$amount_paid),
+      "bi bi-cash-stack", "#0891b2",
+      d$amount_paid, delta_fmt = fmt_currency
     )
   )
 }
@@ -428,19 +465,6 @@ cancer_chart_js <- paste0(
           )
         ),
 
-        # Created Date (month selector)
-        div(class = "col-12 col-md-2 col-xl-2",
-          div(class = "filter-bar-group",
-            div(class = "filter-bar-label",
-              tags$i(class = "bi bi-calendar3"), "Created Date"),
-            selectInput("cnc_created_month", NULL,
-              choices  = c("All Months" = "",
-                           setNames(.cancer_months, .cancer_months)),
-              selected = "",
-              width    = "100%")
-          )
-        ),
-
         # Incurred Date
         div(class = "col-12 col-md-2 col-xl-2",
           div(class = "filter-bar-group",
@@ -451,6 +475,18 @@ cancer_chart_js <- paste0(
                            setNames(.cancer_months, .cancer_months)),
               selected = "",
               width    = "100%")
+          )
+        ),
+
+        # Cancer Type
+        div(class = "col-12 col-md-3 col-xl-2",
+          div(class = "filter-bar-group",
+            div(class = "filter-bar-label",
+              tags$i(class = "bi bi-virus2"), "Cancer Type"),
+            selectInput("cnc_cancer_type", NULL,
+              choices  = c("All Types" = "",
+                           setNames(.cnc_icd_types$cancer_type, .cnc_icd_types$cancer_type)),
+              multiple = TRUE, selectize = TRUE, width = "100%")
           )
         ),
 
@@ -512,10 +548,10 @@ cancer_panel_ui <- function() {
   div(class = "container-fluid px-4 py-4",
 
     indicator_header(
-      "SHA Payments for Cancer Treatment",
+      "Cancer Registry",
       last_updated = "13 May 2026",
       source = "Payer System",
-      info = "Tracks SHA cancer treatment payments by county. Covers total patients treated, new patients (SHA paying for chemotherapy for the very first time that month), and total amounts paid by SHA.",
+      info = "Tracks cancer patients enrolled in the SHA registry. Shows cumulative patients ever treated, those currently on treatment (received chemotherapy within the last 3 months), and new patients starting chemotherapy for the very first time. Breakdowns are available by county, facility level, cancer type (ICD-11), gender, and age group.",
       title_suffix_id = "cnc_location_suffix",
       badges = tagList(
         tags$span(class = "badge text-bg-success px-3 py-2 rounded-pill", "all_users")
@@ -546,23 +582,88 @@ cancer_panel_ui <- function() {
 
     tags$hr(class = "my-4 border-light"),
 
-    # AC2 - Monthly trend charts
-    tags$h6(class = "ind-section-label", "Monthly Trend (last 12 months)"),
+    # AC2 - Trend charts
+    tags$h6(class = "ind-section-label", "Trends"),
     div(class = "row g-4",
+
+      # Treatment Trends — weekly/monthly toggle
       div(class = "col-12 col-xl-6",
-        .cnc_chart_card(
-          "Treatment Trends",
-          "Currently on Treatment vs New on Treatment",
-          "cncVolumeChart",
-          note = "<sup>*</sup> <strong>New on Treatment:</strong> SHA is paying for chemotherapy for the very first time in that month."
+        div(class = "card border-0 shadow-sm",
+          div(class = "card-header bg-white border-bottom px-4 py-3",
+            div(class = "d-flex justify-content-between align-items-center",
+              div(
+                div(class = "fw-semibold", style = "color:#0f172a;", "Treatment Trends"),
+                div(class = "text-muted", style = "font-size:.82rem;",
+                    "Currently on Treatment vs New on Treatment")
+              ),
+              div(class = "btn-group btn-group-sm",
+                tags$button(
+                  type = "button",
+                  class = "btn btn-outline-primary cnc-vol-toggle active",
+                  onclick = "cncSetVolumePeriod('monthly', this)",
+                  "Monthly"
+                ),
+                tags$button(
+                  type = "button",
+                  class = "btn btn-outline-primary cnc-vol-toggle",
+                  onclick = "cncSetVolumePeriod('weekly', this)",
+                  "Weekly"
+                )
+              )
+            )
+          ),
+          div(class = "card-body px-4 py-3",
+            div(style = "position:relative; height:280px;",
+              tags$canvas(id = "cncVolumeChart")
+            )
+          ),
+          div(class = "card-footer bg-white border-top px-4 py-2",
+            tags$ul(class = "mb-0 ps-3", style = "font-size:.7rem; color:#94a3b8;",
+              tags$li(HTML("<strong>Currently on Treatment:</strong> Patients who received chemotherapy within the last 3 months.")),
+              tags$li(HTML("<strong>New on Treatment:</strong> Patients who started chemotherapy for the very first time."))
+            )
+          )
         )
       ),
+
+      # Payment Amount by Patient Type — Current/New toggle, gender × age breakdown
       div(class = "col-12 col-xl-6",
-        .cnc_chart_card(
-          "Payment Amount Trends",
-          "Total amount vs New on Treatment amount (KES M)",
-          "cncAmountChart",
-          note = "<sup>*</sup> <strong>New on Treatment:</strong> SHA is paying for chemotherapy for the very first time in that month."
+        div(class = "card border-0 shadow-sm",
+          div(class = "card-header bg-white border-bottom px-4 py-3",
+            div(class = "d-flex justify-content-between align-items-center",
+              div(
+                div(class = "fw-semibold", style = "color:#0f172a;",
+                    "Patients by Type, Gender & Age"),
+                div(class = "text-muted", style = "font-size:.82rem;",
+                    "Count of patients by gender and age group")
+              ),
+              div(class = "btn-group btn-group-sm",
+                tags$button(
+                  type = "button",
+                  class = "btn btn-outline-primary cnc-amt-toggle active",
+                  onclick = "cncSetAmountGroup('current', this)",
+                  "Current Patients"
+                ),
+                tags$button(
+                  type = "button",
+                  class = "btn btn-outline-primary cnc-amt-toggle",
+                  onclick = "cncSetAmountGroup('new', this)",
+                  "New Patients"
+                )
+              )
+            )
+          ),
+          div(class = "card-body px-4 py-3",
+            div(style = "position:relative; height:280px;",
+              tags$canvas(id = "cncAmountChart")
+            )
+          ),
+          div(class = "card-footer bg-white border-top px-4 py-2",
+            tags$ul(class = "mb-0 ps-3", style = "font-size:.7rem; color:#94a3b8;",
+              tags$li(HTML("<strong>Current Patients:</strong> Received chemotherapy within the last 3 months.")),
+              tags$li(HTML("<strong>New Patients:</strong> Started chemotherapy for the very first time."))
+            )
+          )
         )
       )
     ),
@@ -604,8 +705,9 @@ cancer_panel_ui <- function() {
           uiOutput("cnc_showing"),
           uiOutput("cnc_pagination")
         ),
-        tags$p(class = "mb-0 mt-2", style = "font-size:.7rem; color:#94a3b8;",
-          HTML("<sup>*</sup> <strong>New patients:</strong> SHA is paying for chemotherapy treatment for the very first time in the reporting month.")
+        tags$ul(class = "mb-0 mt-2 ps-3", style = "font-size:.7rem; color:#94a3b8;",
+          tags$li(HTML("<strong>Currently on Treatment:</strong> Patients who received chemotherapy within the last 3 months.")),
+          tags$li(HTML("<strong>New on Treatment:</strong> Patients who started chemotherapy for the very first time."))
         )
       )
     )
@@ -669,8 +771,8 @@ cancer_server <- function(input, output, session) {
   })
 
   observeEvent(input$cnc_reset, {
-    updateSelectInput(session, "cnc_created_month",  selected = "")
     updateSelectInput(session, "cnc_incurred_month", selected = "")
+    updateSelectInput(session, "cnc_cancer_type",    selected = character(0))
     updateSelectInput(session, "cnc_county",         selected = character(0))
     updateSelectInput(session, "cnc_level",          selected = "")
     updateSelectInput(session, "cnc_facility",       selected = "")

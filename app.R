@@ -21,7 +21,7 @@ INDICATORS <- list(
        icon = "bi-stopwatch",          category = "Claim Flow Analysis"),
   list(id = "age", label = "Claims Ageing Report",
        icon = "bi-hourglass-split",    category = "Claim Flow Analysis"),
-  list(id = "cnc", label = "Cancer Payments",
+  list(id = "cnc", label = "Cancer Registry",
        icon = "bi-heart-pulse-fill",   category = "Health Services")
 )
 
