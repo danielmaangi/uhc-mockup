@@ -182,7 +182,7 @@ apx_chart_js <- paste0(
     setTimeout(function() { initApxFundChart(target.replace('#apx-pane-', '')); }, 50);
   });
 
-  /* apx is the default panel — init Overall on page load */
+  /* apx is the default panel - init Overall on page load */
   document.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() { initApxFundChart('Overall'); }, 150);
   });
@@ -323,7 +323,7 @@ apx_chart_js <- paste0(
           div(class = "fw-semibold", style = "color:#0f172a;",
               "Unpaid Claims Value by Created Date"),
           div(class = "text-muted", style = "font-size:.82rem;",
-              "Monthly unpaid claim value — hover to see claim count")
+              "Monthly unpaid claim value - hover to see claim count")
         ),
         div(class = "card-body px-4 py-3",
           div(style = "position:relative; height:280px;",
@@ -456,7 +456,7 @@ apx_panel_ui <- function() {
       type = "warning"
     ),
 
-    # Fund-type tabs — full width, above filters
+    # Fund-type tabs - full width, above filters
     tags$ul(class = "nav nav-pills nav-fill mb-3", role = "tablist",
       lapply(c("Overall", .APX_FUNDS), function(f) {
         tags$li(class = "nav-item", role = "presentation",

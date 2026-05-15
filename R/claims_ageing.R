@@ -5,7 +5,7 @@
 
 # ---- Constants ---------------------------------------------------------------
 
-.AG_BUCKET_LABELS <- c("0–30 days", "31–60 days", "61–90 days", "90+ days")
+.AG_BUCKET_LABELS <- c("0-30 days", "31-60 days", "61-90 days", "90+ days")
 .AG_BUCKET_COLORS <- c("#22c55e", "#f59e0b", "#f97316", "#ef4444")
 .AG_LEVELS        <- c("Level 2", "Level 3", "Level 4", "Level 5", "National Referral")
 .ag_months        <- format(seq(as.Date("2025-05-01"), by = "month", length.out = 12), "%b '%y")
@@ -400,26 +400,26 @@ ageing_panel_ui <- function() {
     insight_banner(
       paste0(
         fmt_num(ageing_summary$b90p), " claims aged 90+ days totalling ",
-        fmt_currency(ageing_summary$v90p), " — immediate escalation required."
+        fmt_currency(ageing_summary$v90p), " - immediate escalation required."
       ),
       sub = paste0(
         "A further ", fmt_num(ageing_summary$b61_90), " claims (",
         fmt_currency(ageing_summary$v61_90),
-        ") are in the 61–90 day window."
+        ") are in the 61-90 day window."
       ),
       type = "danger"
     ),
 
     .ageing_filter_bar(),
 
-    # Section 1 — Ageing bucket cards
+    # Section 1 - Ageing bucket cards
     tags$h6(class = "ind-section-label", "Ageing Buckets"),
     div(class = "row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-3",
-      .ag_bucket_card("0–30 days",  fmt_currency(ageing_summary$v0_30),
+      .ag_bucket_card("0-30 days",  fmt_currency(ageing_summary$v0_30),
                       ageing_summary$b0_30,  "#22c55e"),
-      .ag_bucket_card("31–60 days", fmt_currency(ageing_summary$v31_60),
+      .ag_bucket_card("31-60 days", fmt_currency(ageing_summary$v31_60),
                       ageing_summary$b31_60, "#f59e0b"),
-      .ag_bucket_card("61–90 days", fmt_currency(ageing_summary$v61_90),
+      .ag_bucket_card("61-90 days", fmt_currency(ageing_summary$v61_90),
                       ageing_summary$b61_90, "#f97316"),
       .ag_bucket_card("90+ days",        fmt_currency(ageing_summary$v90p),
                       ageing_summary$b90p,   "#ef4444")
@@ -427,7 +427,7 @@ ageing_panel_ui <- function() {
 
     tags$hr(class = "my-4 border-light"),
 
-    # Section 2 — Bar charts
+    # Section 2 - Bar charts
     tags$h6(class = "ind-section-label", "Distribution by Ageing Bucket"),
     div(class = "row g-4",
       div(class = "col-12 col-xl-6",
@@ -438,7 +438,7 @@ ageing_panel_ui <- function() {
 
     tags$hr(class = "my-4 border-light"),
 
-    # Section 3 — County ageing table
+    # Section 3 - County ageing table
     tags$h6(class = "ind-section-label", "County Breakdown"),
     div(class = "card border-0 shadow-sm",
       div(class = "card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3 px-4",
@@ -447,7 +447,7 @@ ageing_panel_ui <- function() {
           uiOutput("ageing_row_count"),
           tags$button(type = "button",
             class = "btn btn-sm btn-outline-secondary",
-            onclick = "showMockAction('Preparing ageing report Excel export — the file will download shortly.')",
+            onclick = "showMockAction('Preparing ageing report Excel export - the file will download shortly.')",
             tags$i(class = "bi bi-file-earmark-excel me-1"), "Export"
           )
         )
@@ -493,13 +493,13 @@ ageing_server <- function(input, output, session) {
     s <- (p - 1L) * PAGE_SIZE + 1L
     e <- min(p * PAGE_SIZE, n)
     tags$span(class = "badge text-bg-light border small",
-              sprintf("%d–%d of %d counties", s, e, n))
+              sprintf("%d-%d of %d counties", s, e, n))
   })
 
   output$ageing_showing <- renderUI({
     tags$span(class = "text-muted small",
       tags$i(class = "bi bi-info-circle me-1"),
-      sprintf("%d counties — sorted by total claims", length(sorted_data))
+      sprintf("%d counties - sorted by total claims", length(sorted_data))
     )
   })
 

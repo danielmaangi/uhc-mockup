@@ -91,7 +91,7 @@ tat_chart_js <- paste0(
   "var tatVal3190=",   jsonlite::toJSON(tat_trend$val_3190),        ";",
   "var tatValAfter=",  jsonlite::toJSON(tat_trend$val_after90),     ";",
 
-  # 2. Lazy initialisation — charts are created the first time the TAT panel
+  # 2. Lazy initialisation - charts are created the first time the TAT panel
   #    is revealed so Canvas elements have non-zero dimensions.
   "
   var _tatChartsReady = false;
@@ -170,9 +170,9 @@ tat_chart_js <- paste0(
         data: {
           labels: tatLabels,
           datasets: [
-            { label: '≤30 days',  data: tatPct30,    stack: 'dist',
+            { label: '<=30 days',  data: tatPct30,    stack: 'dist',
               backgroundColor: 'rgba(34,197,94,0.75)',  borderColor: '#22c55e', borderWidth: 1 },
-            { label: '31–90 days', data: tatPct3190,  stack: 'dist',
+            { label: '31-90 days', data: tatPct3190,  stack: 'dist',
               backgroundColor: 'rgba(245,158,11,0.75)', borderColor: '#f59e0b', borderWidth: 1 },
             { label: '>90 days',       data: tatPctAfter, stack: 'dist',
               backgroundColor: 'rgba(239,68,68,0.75)',  borderColor: '#ef4444', borderWidth: 1 }
@@ -336,7 +336,7 @@ tat_chart_js <- paste0(
   )
 }
 
-# Horizontal filter bar (AC4) — specific to this indicator.
+# Horizontal filter bar (AC4) - specific to this indicator.
 .tat_filter_bar <- function() {
   div(class = "card filter-card border-0 shadow-sm mb-4",
     div(class = "card-body py-3 px-4",
@@ -436,7 +436,7 @@ tat_panel_ui <- function() {
       paste0(
         tat_summary$pct_after90, "% of claims (",
         fmt_num(round(tat_summary$n_claims * tat_summary$pct_after90 / 100)),
-        " claims) settled beyond the 90-day SLA — median TAT is ",
+        " claims) settled beyond the 90-day SLA - median TAT is ",
         tat_summary$median_tat, " days."
       ),
       sub = paste0(
@@ -445,21 +445,21 @@ tat_panel_ui <- function() {
       type = "warning"
     ),
 
-    # AC4 — filters (horizontal bar, indicator-specific)
+    # AC4 - filters (horizontal bar, indicator-specific)
     .tat_filter_bar(),
 
-    # AC1 — Summary cards
+    # AC1 - Summary cards
     tags$h6(class = "ind-section-label", "Summary Metrics"),
     .tat_cards_ui(tat_summary, tat_deltas),
 
     tags$hr(class = "my-4 border-light"),
 
-    # AC2 — Monthly trend charts
+    # AC2 - Monthly trend charts
     tags$h6(class = "ind-section-label", "Monthly Trend (last 12 months)"),
     div(class = "row g-4",
       div(class = "col-12 col-xl-6",
         .chart_card("TAT Trends",
-                    "Min / Median / Max days by payment date — dashed lines show 30-day and 90-day SLA targets",
+                    "Min / Median / Max days by payment date - dashed lines show 30-day and 90-day SLA targets",
                     "tatTrendChart")),
       div(class = "col-12 col-xl-6",
         .chart_card("Payment Period Distribution",
@@ -469,7 +469,7 @@ tat_panel_ui <- function() {
 
     tags$hr(class = "my-4 border-light"),
 
-    # AC3 — County comparison table
+    # AC3 - County comparison table
     tags$h6(class = "ind-section-label", "County Comparison"),
     div(class = "card border-0 shadow-sm",
       div(class = "card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3 px-4",
@@ -478,7 +478,7 @@ tat_panel_ui <- function() {
           uiOutput("tat_row_count"),
           tags$button(type = "button",
             class = "btn btn-sm btn-outline-secondary",
-            onclick = "showMockAction('Preparing TAT county Excel export — the file will download shortly.')",
+            onclick = "showMockAction('Preparing TAT county Excel export - the file will download shortly.')",
             tags$i(class = "bi bi-file-earmark-excel me-1"), "Export"
           )
         )
@@ -527,7 +527,7 @@ tat_server <- function(input, output, session) {
     s  <- (p - 1L) * PAGE_SIZE + 1L
     e  <- min(p * PAGE_SIZE, n)
     tags$span(class = "badge text-bg-light border small",
-              if (n == 0) "0 counties" else sprintf("%d–%d of %d counties", s, e, n))
+              if (n == 0) "0 counties" else sprintf("%d-%d of %d counties", s, e, n))
   })
 
   output$tat_showing <- renderUI({

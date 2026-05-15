@@ -1,7 +1,7 @@
 # ==============================================================================
 # Indicator: Cancer Patients & SHA Chemotherapy Payments
 # Spec: requirements/cancer_patients_sha_payments_dashboard.md
-# Data source: SHA-06 (21–33) Hemato-Oncology Treatment; patient ID = CR Number
+# Data source: SHA-06 (21-33) Hemato-Oncology Treatment; patient ID = CR Number
 # ==============================================================================
 
 # ---- Data --------------------------------------------------------------------
@@ -527,7 +527,7 @@ cancer_panel_ui <- function() {
         fmt_num(cancer_summary$new_month),
         " patients are new on treatment this month. ",
         "Submitted claims: ", fmt_currency(cancer_summary$submitted_value),
-        " — SHA paid ", fmt_currency(cancer_summary$amount_paid), "."
+        " - SHA paid ", fmt_currency(cancer_summary$amount_paid), "."
       ),
       sub = paste0(
         "Cumulative (ever treated): ", fmt_num(cancer_summary$total_ever), ". ",
@@ -537,16 +537,16 @@ cancer_panel_ui <- function() {
       type = "info"
     ),
 
-    # AC4 — filters
+    # AC4 - filters
     .cnc_filter_bar(),
 
-    # AC1 — Summary cards
+    # AC1 - Summary cards
     tags$h6(class = "ind-section-label", "Summary Metrics"),
     .cnc_cards_ui(cancer_summary, cancer_deltas),
 
     tags$hr(class = "my-4 border-light"),
 
-    # AC2 — Monthly trend charts
+    # AC2 - Monthly trend charts
     tags$h6(class = "ind-section-label", "Monthly Trend (last 12 months)"),
     div(class = "row g-4",
       div(class = "col-12 col-xl-6",
@@ -574,7 +574,7 @@ cancer_panel_ui <- function() {
     div(class = "card border-0 shadow-sm mb-4",
       div(class = "card-header bg-white border-bottom px-4 py-3",
         div(class = "fw-semibold", style = "color:#0f172a;",
-            "Cancer Types — Currently on Treatment"),
+            "Cancer Types - Currently on Treatment"),
         div(class = "text-muted", style = "font-size:.82rem;",
             "Click any column header to sort")
       ),
@@ -583,7 +583,7 @@ cancer_panel_ui <- function() {
 
     tags$hr(class = "my-4 border-light"),
 
-    # AC3 — County comparison table
+    # AC3 - County comparison table
     tags$h6(class = "ind-section-label", "County Comparison"),
     div(class = "card border-0 shadow-sm",
       div(class = "card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3 px-4",
@@ -593,7 +593,7 @@ cancer_panel_ui <- function() {
           uiOutput("cnc_row_count"),
           tags$button(type = "button",
             class = "btn btn-sm btn-outline-secondary",
-            onclick = "showMockAction('Preparing cancer payments Excel export — the file will download shortly.')",
+            onclick = "showMockAction('Preparing cancer payments Excel export - the file will download shortly.')",
             tags$i(class = "bi bi-file-earmark-excel me-1"), "Export"
           )
         )
@@ -647,7 +647,7 @@ cancer_server <- function(input, output, session) {
     s  <- (p - 1L) * PAGE_SIZE + 1L
     e  <- min(p * PAGE_SIZE, n)
     tags$span(class = "badge text-bg-light border small",
-              if (n == 0) "0 counties" else sprintf("%d–%d of %d counties", s, e, n))
+              if (n == 0) "0 counties" else sprintf("%d-%d of %d counties", s, e, n))
   })
 
   output$cnc_showing <- renderUI({

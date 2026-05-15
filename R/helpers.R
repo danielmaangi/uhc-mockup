@@ -24,7 +24,7 @@ pct_badge <- function(x, lo, hi, higher_is_bad = TRUE) {
 
 # Delta badge shown on metric cards.
 delta_tag <- function(delta, lower_is_better = FALSE, suffix = "") {
-  if (delta == 0) return(tags$span(class = "text-muted", style = "font-size:.75rem;", "—"))
+  if (delta == 0) return(tags$span(class = "text-muted", style = "font-size:.75rem;", "--"))
   is_pos  <- delta > 0
   is_good <- xor(is_pos, lower_is_better)
   color   <- if (is_good) "#16a34a" else "#dc2626"
