@@ -561,14 +561,11 @@ cancer_panel_ui <- function() {
     insight_banner(
       paste0(
         fmt_num(cancer_summary$new_month),
-        " patients are new on treatment this month. ",
-        "Submitted claims: ", fmt_currency(cancer_summary$submitted_value),
-        " - SHA paid ", fmt_currency(cancer_summary$amount_paid), "."
+        " patients are new on treatment this month. "
       ),
       sub = paste0(
         "Cumulative (ever treated): ", fmt_num(cancer_summary$total_ever), ". ",
-        "Currently on treatment (last 3 months): ", fmt_num(cancer_summary$unique_3m), ". ",
-        "New on treatment: ", fmt_num(cancer_summary$new_month), "."
+        "Currently on treatment (last 3 months): ", fmt_num(cancer_summary$unique_3m), ". "
       ),
       type = "info"
     ),
