@@ -34,6 +34,7 @@ INDICATORS <- list(
   div(
     id    = paste0("nav-", ind$id),
     class = paste("sidebar-nav-item", if (is_first) "active" else ""),
+    `data-label` = tolower(ind$label),
     onclick = sprintf(
       "Shiny.setInputValue('nav_click', '%s', {priority: 'event'})",
       ind$id
@@ -43,17 +44,25 @@ INDICATORS <- list(
 }
 
 .build_sidebar_nav <- function(indicators) {
-  # Group by category
   categories <- unique(sapply(indicators, `[[`, "category"))
   groups <- lapply(categories, function(cat) {
-    items <- Filter(function(x) x$category == cat, indicators)
-    tagList(
+    items  <- Filter(function(x) x$category == cat, indicators)
+    grp_id <- gsub("[^a-z0-9]", "-", tolower(cat))
+    div(class = "sidebar-cat-group",
       div(class = "sidebar-category-label",
+        `data-bs-toggle` = "collapse",
+        `data-bs-target` = paste0("#cat-", grp_id),
+        `aria-expanded`  = "true",
+        style = "cursor:pointer;",
         tags$i(class = "bi bi-collection me-2"),
-        cat
+        span(class = "flex-grow-1", cat),
+        tags$i(class = "bi bi-chevron-down sidebar-chevron")
       ),
-      lapply(seq_along(items), function(i)
-        .nav_item(items[[i]], i == 1 && cat == categories[[1]])
+      div(id    = paste0("cat-", grp_id),
+          class = "collapse show sidebar-cat-items",
+        lapply(seq_along(items), function(i)
+          .nav_item(items[[i]], i == 1 && cat == categories[[1]])
+        )
       )
     )
   })
@@ -65,16 +74,14 @@ app_sidebar <- sidebar(
   bg     = "white",
   class  = "app-sidebar",
 
-  # App brand
-  div(class = "sidebar-brand",
-    tags$i(class = "bi bi-shield-plus sidebar-brand-icon"),
-    div(
-      div(class = "sidebar-brand-name", "UHC Indicator"),
-      div(class = "sidebar-brand-sub",  "Reference")
+  # Search box
+  div(class = "px-2 mb-1",
+    tags$input(
+      type = "text", id = "sidebar_search",
+      class = "form-control form-control-sm sidebar-search",
+      placeholder = "Search indicators..."
     )
   ),
-
-  tags$hr(class = "sidebar-divider"),
 
   # Indicator navigation
   div(class = "sidebar-nav-list",
@@ -146,11 +153,34 @@ app_css <- HTML("
 
   .sidebar-divider { border-color: var(--sidebar-border); margin: .25rem .75rem .5rem; }
 
+  /* Search input */
+  .sidebar-search {
+    font-size: .8rem !important; border-radius: .5rem !important;
+    border-color: var(--sidebar-border) !important;
+    background: oklch(0.975 0.003 260) !important;
+    padding: .32rem .65rem !important;
+  }
+  .sidebar-search:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 2px oklch(0.55 0.16 232 / 0.2) !important;
+    background: white !important; outline: none;
+  }
+
+  /* Category group */
+  .sidebar-cat-group { margin-bottom: .15rem; }
   .sidebar-category-label {
     font-size: .62rem; font-weight: 700; color: var(--muted-foreground);
     text-transform: uppercase; letter-spacing: .1em;
     padding: .85rem 1rem .35rem; display: flex; align-items: center;
+    user-select: none;
   }
+  .sidebar-category-label:hover { color: var(--sidebar-foreground); }
+  .sidebar-chevron {
+    font-size: .65rem; transition: transform .2s ease; margin-left: .25rem;
+  }
+  .sidebar-category-label.collapsed .sidebar-chevron { transform: rotate(-90deg); }
+
+  /* Nav items */
   .sidebar-nav-item {
     display: flex; align-items: center; gap: .6rem;
     padding: .48rem .85rem;
@@ -158,16 +188,19 @@ app_css <- HTML("
     color: var(--sidebar-foreground); opacity: .7;
     border-radius: calc(var(--radius) - 2px);
     margin: .1rem .5rem;
-    cursor: pointer; transition: background .12s, color .12s, opacity .12s;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+    transition: background .15s, color .15s, opacity .15s, border-color .15s;
   }
-  .sidebar-nav-item:hover  {
+  .sidebar-nav-item:hover {
     background: var(--sidebar-accent);
     color: var(--sidebar-accent-fg);
     opacity: 1;
   }
   .sidebar-nav-item.active {
-    background: var(--primary);
-    color: var(--sidebar-primary-fg);
+    border-left-color: var(--primary);
+    background: oklch(0.55 0.16 232 / 0.1);
+    color: var(--primary);
     opacity: 1; font-weight: 600;
   }
   .sidebar-nav-item.active .sidebar-nav-icon { opacity: .9; }
@@ -392,6 +425,28 @@ app_js <- HTML("
     if (id === 'age' && typeof window.revealAgeingCharts === 'function') {
       setTimeout(window.revealAgeingCharts, 80);
     }
+  });
+
+  /* ── Sidebar search filter ──────────────────────────────────────────── */
+  document.addEventListener('DOMContentLoaded', function() {
+    var searchEl = document.getElementById('sidebar_search');
+    if (!searchEl) return;
+    searchEl.addEventListener('input', function() {
+      var q = this.value.toLowerCase().trim();
+      document.querySelectorAll('.sidebar-nav-item').forEach(function(item) {
+        var match = !q || (item.dataset.label || '').includes(q);
+        item.style.display = match ? '' : 'none';
+      });
+      document.querySelectorAll('.sidebar-cat-group').forEach(function(grp) {
+        var hasVisible = Array.from(grp.querySelectorAll('.sidebar-nav-item'))
+          .some(function(i) { return i.style.display !== 'none'; });
+        grp.style.display = hasVisible ? '' : 'none';
+        if (hasVisible && q) {
+          var catItems = grp.querySelector('.sidebar-cat-items');
+          if (catItems) catItems.classList.add('show');
+        }
+      });
+    });
   });
 
   /* ── County expand / collapse (Approved vs Unpaid) ─────────────────── */
