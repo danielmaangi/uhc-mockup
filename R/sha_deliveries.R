@@ -90,7 +90,7 @@ deliveries_chart_js <- paste0(
             fill: false
           },
           {
-            label: 'SHA Claimed Deliveries',
+            label: 'SHA Funded Deliveries',
             data: dlvSha,
             borderColor: '#0e82b5',
             pointBackgroundColor: '#0e82b5',
@@ -174,7 +174,7 @@ deliveries_chart_js <- paste0(
     .dlv_metric_card("Total Deliveries (KHIS)",
                      fmt_num(m$total_deliveries),
                      "bi bi-hospital-fill", "#0284c7"),
-    .dlv_metric_card("SHA Claimed Deliveries",
+    .dlv_metric_card("SHA Funded Deliveries",
                      fmt_num(m$sha_claimed),
                      "bi bi-file-earmark-check-fill", "#059669"),
     .dlv_metric_card("Proportion Paid by SHA",
@@ -293,7 +293,7 @@ deliveries_chart_js <- paste0(
         tags$tr(
           col_th("County Name",         "180px"),
           col_th("KHIS Delivery Count"),
-          col_th("SHA Claimed Count"),
+          col_th("SHA Funded Count"),
           col_th("Proportion")
         )
       ),
@@ -317,7 +317,7 @@ deliveries_panel_ui <- function() {
       paste0(dlv_summary$proportion_pct,
              "% of facility deliveries were financed through SHA."),
       sub = paste0(
-        "SHA claimed: ", fmt_num(dlv_summary$sha_claimed), " deliveries.  ",
+        "SHA Funded: ", fmt_num(dlv_summary$sha_claimed), " deliveries.  ",
         "Total (KHIS): ", fmt_num(dlv_summary$total_deliveries), ".  ",
         "KHIS outliers capped using IQR method before proportion calculations."
       ),
@@ -335,7 +335,7 @@ deliveries_panel_ui <- function() {
     div(class = "card border-0 shadow-sm mb-4",
       div(class = "card-header bg-white border-bottom px-4 py-3",
         div(class = "fw-semibold", style = "color:#0f172a;",
-            "Total Deliveries vs SHA Claimed — Monthly"),
+            "Total Deliveries vs SHA Funded — Monthly"),
         div(class = "text-muted", style = "font-size:.82rem;",
             "Shaded area represents the coverage gap (unclaimed deliveries)")
       ),
@@ -347,7 +347,7 @@ deliveries_panel_ui <- function() {
       div(class = "card-footer bg-white border-top px-4 py-2",
         tags$ul(class = "mb-0 ps-3", style = "font-size:.7rem; color:#94a3b8;",
           tags$li(HTML("<strong>Total Deliveries (KHIS):</strong> DHIS2 indicator BDsWWkJHuce. Outliers capped to nearest IQR fence before rendering.")),
-          tags$li(HTML("<strong>SHA Claimed Deliveries:</strong> Sum of codes SHA-08-005 (Vaginal), SHA-08-006 (Caesarean), SHA-08-007 (Multiple births)."))
+          tags$li(HTML("<strong>SHA Funded Deliveries:</strong> Sum of codes SHA-08-005 (Vaginal), SHA-08-006 (Caesarean), SHA-08-007 (Multiple births)."))
         )
       )
     ),
