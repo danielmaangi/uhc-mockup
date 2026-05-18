@@ -17,11 +17,11 @@ source("R/claims_ageing.R")
 
 INDICATORS <- list(
   list(id = "apx", label = "Unpaid Claims in ERP",
-       icon = "bi-file-earmark-check", category = "Claim Flow Analysis"),
+       icon = "bi-file-earmark-check", category = "Claim Flow"),
   list(id = "tat", label = "Claims TAT",
-       icon = "bi-stopwatch",          category = "Claim Flow Analysis"),
+       icon = "bi-stopwatch",          category = "Claim Flow"),
   list(id = "age", label = "Claims Ageing Report",
-       icon = "bi-hourglass-split",    category = "Claim Flow Analysis"),
+       icon = "bi-hourglass-split",    category = "Claim Flow"),
   list(id = "cnc", label = "Cancer Registry",
        icon = "bi-heart-pulse-fill",   category = "Health Services")
 )
@@ -45,24 +45,27 @@ INDICATORS <- list(
 
 .build_sidebar_nav <- function(indicators) {
   categories <- unique(sapply(indicators, `[[`, "category"))
-  groups <- lapply(categories, function(cat) {
+  groups <- lapply(seq_along(categories), function(ci) {
+    cat    <- categories[[ci]]
     items  <- Filter(function(x) x$category == cat, indicators)
     grp_id <- gsub("[^a-z0-9]", "-", tolower(cat))
     div(class = "sidebar-cat-group",
       div(class = "sidebar-category-label",
         `data-bs-toggle` = "collapse",
         `data-bs-target` = paste0("#cat-", grp_id),
-        `aria-expanded`  = "true",
+        `aria-expanded`  = "false",
         style = "cursor:pointer;",
         tags$i(class = "bi bi-collection me-2"),
-        span(class = "flex-grow-1", cat),
+        span(class = "flex-grow-1", paste0(ci, ". ", cat)),
         tags$i(class = "bi bi-chevron-down sidebar-chevron")
       ),
       div(id    = paste0("cat-", grp_id),
-          class = "collapse show sidebar-cat-items",
-        lapply(seq_along(items), function(i)
-          .nav_item(items[[i]], i == 1 && cat == categories[[1]])
-        )
+          class = "collapse sidebar-cat-items",
+        lapply(seq_along(items), function(i) {
+          ind <- items[[i]]
+          ind$label <- paste0(ci, ".", i, " ", ind$label)
+          .nav_item(ind, i == 1 && cat == categories[[1]])
+        })
       )
     )
   })
