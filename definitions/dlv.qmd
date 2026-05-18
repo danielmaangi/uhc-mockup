@@ -1,0 +1,43 @@
+---
+indicator_code: "DLV-001"
+indicator_name: "Deliveries Funded by SHA"
+definition: |
+  Measures the **share of total facility deliveries that were financed through SHA** in a given period. It     quantifies how much of Kenya's facility delivery load is being captured and reimbursed through the Social    Health Authority, serving as a proxy for UHC coverage depth in maternal health. A higher proportion          indicates broader SHA financing of deliveries relative to the total burden recorded in KHIS.
+numerator: |
+  SHA claimed deliveries — sum of claims submitted under:
+  - **SHA-08-005** — Vaginal delivery
+  - **SHA-08-006** — Caesarean section
+  - **SHA-08-007** — Multiple births delivery
+denominator: |
+  Total facility deliveries from KHIS — DHIS2 indicator ID **`BDsWWkJHuce`**
+  (source: [hiskenya.dha.go.ke](https://hiskenya.dha.go.ke/))
+unit_of_measure: |
+  - **Percentage (%)** — numerator ÷ denominator × 100
+data_source: |
+  - **Payer. ERP** — delivery claims (codes SHA-08-005, SHA-08-006, SHA-08-007)
+  - **KHIS / DHIS2** — total facility deliveries (indicator `BDsWWkJHuce`), pulled monthly
+frequency: |
+  - **Summary cards** — cumulative over the selected date range
+  - **Trend chart** — monthly aggregation
+  - **County table** — cumulative over the selected date range
+disaggregation: |
+  - County
+sdg_who_ref: |
+  - **SDG 3.1** — By 2030, reduce the global maternal mortality ratio to less than
+    70 per 100,000 live births.
+  - **SDG 3.8** — Achieve universal health coverage, including financial risk
+    protection and access to quality essential health services.
+notes_caveats: |
+  - **Join logic:** SHA and KHIS data are joined on **county** and **month**
+    (incurred date matched to KHIS reporting period). Counties with zero values in
+    either source are included with a proportion of `—`.
+  - **Outlier handling (KHIS only):** Before proportion calculations, KHIS monthly
+    delivery counts are screened using the **IQR method** — values outside
+    Q1 − 1.5 × IQR or Q3 + 1.5 × IQR are capped to the nearest fence value.
+    This corrects for reporting anomalies without removing data points.
+  - **Division by zero:** Where KHIS delivery count is zero, proportion is displayed
+    as `—` rather than a calculated value.
+  - Proportions exceeding 100% are theoretically possible where SHA claims outpace
+    KHIS-reported totals (e.g., late KHIS submissions or cross-county claims) and
+    should be investigated as data quality flags.
+---

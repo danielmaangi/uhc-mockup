@@ -8,6 +8,7 @@ source("R/approved_unpaid.R")
 source("R/claims_tat.R")
 source("R/cancer_payments.R")
 source("R/claims_ageing.R")
+source("R/sha_deliveries.R")
 
 # ==============================================================================
 # NAVIGATION DEFINITION
@@ -23,7 +24,9 @@ INDICATORS <- list(
   list(id = "age", label = "Claims Ageing Report",
        icon = "bi-hourglass-split",    category = "Claim Flow"),
   list(id = "cnc", label = "Cancer Registry",
-       icon = "bi-heart-pulse-fill",   category = "Health Services")
+       icon = "bi-heart-pulse-fill",   category = "Health Services"),
+  list(id = "dlv", label = "Deliveries financed",
+       icon = "bi-hospital",           category = "Health Services")
 )
 
 # ==============================================================================
@@ -440,6 +443,9 @@ app_js <- HTML("
     if (id === 'age' && typeof window.revealAgeingCharts === 'function') {
       setTimeout(window.revealAgeingCharts, 80);
     }
+    if (id === 'dlv' && typeof window.revealDeliveriesCharts === 'function') {
+      setTimeout(window.revealDeliveriesCharts, 80);
+    }
   });
 
   /* ── Sidebar search filter ──────────────────────────────────────────── */
@@ -553,7 +559,8 @@ ui <- page_sidebar(
     tags$script(HTML(apx_chart_js)),      # from approved_unpaid.R
     tags$script(HTML(tat_chart_js)),      # from claims_tat.R
     tags$script(HTML(cancer_chart_js)),  # from cancer_payments.R
-    tags$script(HTML(ageing_chart_js)),  # from claims_ageing.R
+    tags$script(HTML(ageing_chart_js)),      # from claims_ageing.R
+    tags$script(HTML(deliveries_chart_js)), # from sha_deliveries.R
     tags$script(app_js)
   ),
 
@@ -565,7 +572,8 @@ ui <- page_sidebar(
     tabPanel("apx", indicator_tabs_ui("apx", apx_panel_ui())),
     tabPanel("tat", indicator_tabs_ui("tat", tat_panel_ui())),
     tabPanel("age", indicator_tabs_ui("age", ageing_panel_ui())),
-    tabPanel("cnc", indicator_tabs_ui("cnc", cancer_panel_ui()))
+    tabPanel("cnc", indicator_tabs_ui("cnc", cancer_panel_ui())),
+    tabPanel("dlv", indicator_tabs_ui("dlv", deliveries_panel_ui()))
   )
 )
 
@@ -599,6 +607,7 @@ server <- function(input, output, session) {
   tat_server(input, output, session)
   ageing_server(input, output, session)
   cancer_server(input, output, session)
+  deliveries_server(input, output, session)
 }
 
 shinyApp(ui = ui, server = server)
