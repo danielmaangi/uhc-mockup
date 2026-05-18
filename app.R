@@ -71,7 +71,7 @@ INDICATORS <- list(
 
 app_sidebar <- sidebar(
   width  = 230,
-  bg     = "white",
+  bg     = "#f1f5f9",
   class  = "app-sidebar",
 
   # Search box
@@ -118,7 +118,7 @@ app_css <- HTML("
     --border:                 oklch(0.9 0.006 260);
     --input:                  oklch(0.9 0.006 260);
     --ring:                   oklch(0.55 0.16 232);
-    --sidebar:                oklch(1 0 0);
+    --sidebar:                #f1f5f9;
     --sidebar-foreground:     oklch(0.2 0.02 260);
     --sidebar-primary:        oklch(0.55 0.16 232);
     --sidebar-primary-fg:     oklch(0.99 0.01 232);
@@ -136,7 +136,19 @@ app_css <- HTML("
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ── Sidebar (light theme) ──────────────────────────────────────────── */
+  /* ── Navbar ─────────────────────────────────────────────────────────── */
+  .navbar {
+    background-color: #1e293b !important;
+    border-bottom: 1px solid #0f172a !important;
+  }
+  .navbar .navbar-brand,
+  .navbar-brand span,
+  .bslib-page-title {
+    color: #f1f5f9 !important;
+    font-weight: 600;
+  }
+
+  /* ── Sidebar ─────────────────────────────────────────────────────────── */
   .app-sidebar { border-right: 1px solid var(--sidebar-border) !important; }
 
   .sidebar-brand {
@@ -157,7 +169,7 @@ app_css <- HTML("
   .sidebar-search {
     font-size: .8rem !important; border-radius: .5rem !important;
     border-color: var(--sidebar-border) !important;
-    background: oklch(0.975 0.003 260) !important;
+    background: #e8edf3 !important;
     padding: .32rem .65rem !important;
   }
   .sidebar-search:focus {
