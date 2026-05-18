@@ -1,0 +1,44 @@
+---
+indicator_code: "TAT-001"
+indicator_name: "Claims Turnaround Time (TAT)"
+definition: |
+  The **number of days elapsed between claim creation and payment confirmation** in the
+  ERP. TAT measures the speed of the claims settlement pipeline and is used to monitor
+  operational efficiency and compliance with payment timelines.
+
+  Three summary statistics are tracked: **minimum**, **median**, and **maximum** TAT,
+  along with the share of claims settled within **30 days**, **90 days**, and **after
+  90 days**.
+numerator: |
+  For each paid claim:
+
+  > **TAT (days) = Date Paid − Date Created**
+
+  - **Date Created** — timestamp the claim was first entered into the Payor system
+  - **Date Paid** — date payment was confirmed in the ERP
+denominator: |
+  Total number of **paid claims** in the selected period (used for median/mean
+  calculations and percentage-based KPIs).
+unit_of_measure: "**Days** (whole numbers; floor, not rounded)."
+data_source: |
+  - **ERP** — payment date
+  - **Payor System** — claim creation date
+
+frequency: "Monthly aggregation; trend charts show month-over-month movement."
+disaggregation: |
+  - Fund Scheme (SHIF/ECCIF/POMSF/PHC)
+  - County
+  - Facility Level (Level 2 / 3 / 4 / 5 / National Referral)
+  - Facility
+sdg_who_ref: |
+  **SDG 3.8** — Universal Health Coverage; timely provider reimbursement is a
+  prerequisite for sustained service delivery.
+notes_caveats: |
+  - Only **paid claims** are included
+  - Outliers (very high TAT values) can inflate the **maximum TAT** metric — use
+    **median TAT** as the primary operational benchmark.
+  - TAT is calculated from the **creation date**, not the submission or approval date,
+    so it captures the full end-to-end pipeline.
+  - County-level figures reflect claims processed by facilities within that county,
+    not necessarily patients residing there.
+---

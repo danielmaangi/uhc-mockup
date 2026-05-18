@@ -1,0 +1,49 @@
+---
+indicator_code: "CNC-001"
+indicator_name: "Cancer Registry"
+definition: |
+  Tracks the **unique number of cancer patients** registered in the cancer treatment
+  programme, their **demographic and clinical characteristics**, and their
+  **distribution across facilities and counties**. The indicator distinguishes between
+  **all patients** (cumulative within a rolling 3-month window) and **new patients**
+  appearing in the cancer treatment programme for the first time.
+  Patient identity is established via the **Client Registry (CR) Number** to ensure
+  deduplication across facilities.
+numerator: |
+  - **Unique cancer patients** — distinct CR Numbers with at least one record under
+    intervention code **SHA-06 (21–33)** in the reference period.
+  - **New cancer patients** — CR Numbers appearing in cancer treatment
+    for the **first time ever** in the reference period.
+denominator: |
+  Not applicable
+unit_of_measure: |
+  - **Count** — unique patients (deduplicated by CR Number)
+data_source: |
+  - **Client Registry (CR)** — patient identity, demographics, and deduplication
+  - **ERP Claims Module** — treatment records and intervention codes
+  - **Intervention filter:** `SHA-06 (21–33)` — Hemato-Oncology Treatment
+frequency: |
+  - **Summary cards** — rolling 3-month window and current month
+  - **Trend charts** — monthly aggregation
+disaggregation: |
+  - Cancer type
+  - County
+  - Facility Level (Level 2 / 3 / 4 / 5 / National Referral)
+  - Facility
+  - Patient cohort (All patients / New patients)
+sdg_who_ref: |
+  - **SDG 3.4** — Reduce premature mortality from non-communicable diseases
+    (including cancer) by one-third by 2030.
+  - **SDG 3.8** — Achieve universal health coverage, ensuring access to essential
+    medicines and vaccines.
+notes_caveats: |
+  - **Deduplication** is performed at the CR Number level — a patient registered at
+    multiple facilities in the same period is counted once.
+  - **New patient** status is determined from the **entire historical record**, not
+    just the current period. A patient is "new" only if they have never appeared in
+    cancer treatment before.
+  - The intervention scope is limited to **SHA-06 (21–33) Hemato-Oncology Treatment**.
+    Other cancer-related interventions outside this code range are excluded.
+  - County-level figures reflect the **facility location**, not the patient's
+    county of residence.
+---

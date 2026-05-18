@@ -3,6 +3,7 @@ library(bslib)
 library(jsonlite)
 
 source("R/helpers.R")
+source("R/indicator_def.R")
 source("R/approved_unpaid.R")
 source("R/claims_tat.R")
 source("R/cancer_payments.R")
@@ -68,8 +69,8 @@ app_sidebar <- sidebar(
   div(class = "sidebar-brand",
     tags$i(class = "bi bi-shield-plus sidebar-brand-icon"),
     div(
-      div(class = "sidebar-brand-name", "Phase 1"),
-      div(class = "sidebar-brand-sub",  "Mockups")
+      div(class = "sidebar-brand-name", "UHC Indicator"),
+      div(class = "sidebar-brand-sub",  "Reference")
     )
   ),
 
@@ -467,7 +468,7 @@ app_js <- HTML("
 # ==============================================================================
 
 ui <- page_sidebar(
-  title   = "Phase 1 Mockup",
+  title   = "UHC Data Dictionary",
   theme   = bs_theme(version = 5, primary = "#0e82b5"),   # ≈ oklch(0.55 0.16 232)
   sidebar = app_sidebar,
   fillable = FALSE,
@@ -478,6 +479,7 @@ ui <- page_sidebar(
     tags$script(src = "https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"),
     tags$script(src = "https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.1.0/dist/chartjs-plugin-annotation.min.js"),
     tags$style(app_css),
+    tags$style(HTML(def_panel_css)),
     tags$script(HTML(apx_chart_js)),      # from approved_unpaid.R
     tags$script(HTML(tat_chart_js)),      # from claims_tat.R
     tags$script(HTML(cancer_chart_js)),  # from cancer_payments.R
@@ -490,10 +492,10 @@ ui <- page_sidebar(
     id       = "current_indicator",
     type     = "hidden",
     selected = "apx",
-    tabPanel("apx", apx_panel_ui()),
-    tabPanel("tat", tat_panel_ui()),
-    tabPanel("age", ageing_panel_ui()),
-    tabPanel("cnc", cancer_panel_ui())
+    tabPanel("apx", indicator_tabs_ui("apx", apx_panel_ui())),
+    tabPanel("tat", indicator_tabs_ui("tat", tat_panel_ui())),
+    tabPanel("age", indicator_tabs_ui("age", ageing_panel_ui())),
+    tabPanel("cnc", indicator_tabs_ui("cnc", cancer_panel_ui()))
   )
 )
 

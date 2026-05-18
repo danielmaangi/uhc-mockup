@@ -1,0 +1,33 @@
+---
+indicator_code: "APX-001"
+indicator_name: "Approved but Unpaid Claims in ERP"
+definition: |
+  The **total count and value** of claims that have been approved in ERP but have **not yet been paid**. This    indicator measures the outstanding payment backlog at any point in time, giving operations visibility into
+  claims that are ready for disbursement but remain unsettled.
+numerator: |
+  - Count of claims in ERP where status = **Unpaid**
+  - Value of claims in ERP where status = **Unpaid**
+denominator: |
+  - Total count of claims in ERP
+  - Total value of claims in ERP
+unit_of_measure: |
+  - **Count** — number of unpaid claims in ERP
+  - **KES** — total value of unpaid claims in ERP
+data_source: |
+  - SHA ERP
+  - Fund types covered: **SHIF**, **ECCIF**, **POMSF**, **PHC**
+frequency: "Real-time; values refresh on each page load."
+disaggregation: |
+  - County
+  - Healthcare Provider (within county)
+  - Fund Type (SHIF / ECCIF / POMSF/PHC)
+  - Date Created
+notes_caveats: |
+  - The ERP is the **authoritative source of truth** for payment status. 
+  - The indicator reflects a snapshot at the time of page load; live processing may cause
+    minor fluctuations between views.
+  - Values are in **nominal KES** — no inflation adjustment is applied.
+sdg_who_ref: |
+  **SDG 3.8** — Achieve universal health coverage, including financial risk protection and
+  access to quality essential health-care services.
+---

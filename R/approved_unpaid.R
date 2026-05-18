@@ -217,7 +217,7 @@ apx_chart_js <- paste0(
 .apx_metrics_row <- function(m) {
   pct_val <- round(m$unpaid_value / m$total_value * 100, 1)
   div(class = "row row-cols-1 row-cols-sm-3 g-3",
-    .apx_metric_card("Total Payment Ready Claims", fmt_num(m$total_claims),
+    .apx_metric_card("Value of Claims in ERP", fmt_num(m$total_claims),
                      "bi bi-file-earmark-medical-fill", "#0284c7"),
     .apx_metric_card("Unpaid Claims",              fmt_currency(m$unpaid_value),
                      "bi bi-exclamation-circle-fill",   "#dc2626",
