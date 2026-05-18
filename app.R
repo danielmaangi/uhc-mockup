@@ -73,7 +73,7 @@ INDICATORS <- list(
 }
 
 app_sidebar <- sidebar(
-  width  = 230,
+  width  = 260,
   bg     = "#f1f5f9",
   class  = "app-sidebar",
 
