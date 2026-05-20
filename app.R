@@ -544,7 +544,7 @@ app_js <- HTML("
 # ==============================================================================
 
 ui <- page_sidebar(
-  title   = "UHC Data Dictionary",
+  title   = "UHC Analytics Mockup",
   theme   = bs_theme(version = 5, primary = "#0e82b5"),   # ≈ oklch(0.55 0.16 232)
   sidebar = app_sidebar,
   fillable = FALSE,
