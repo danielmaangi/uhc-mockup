@@ -1,0 +1,113 @@
+---
+format:
+  pdf:
+    pdf-engine: xelatex
+    geometry: "margin=2cm, top=2.5cm"
+    include-in-header:
+      text: |
+        \usepackage{longtable}
+        \usepackage{array}
+        \usepackage{colortbl}
+        \usepackage{xcolor}
+        \usepackage{booktabs}
+        \providecommand{\tightlist}{\setlength{\itemsep}{2pt}\setlength{\parskip}{0pt}}
+params:
+  id: "cur"
+  def_dir: "definitions"
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r setup}
+path   <- file.path(params$def_dir, paste0(params$id, ".qmd"))
+lines  <- readLines(path, warn = FALSE, encoding = "UTF-8")
+delims <- which(trimws(lines) == "---")
+meta   <- yaml::yaml.load(paste(lines[(delims[1]+1):(delims[2]-1)], collapse = "\n"))
+
+fields <- list(
+  list(key = "definition",          label = "Definition"),
+  list(key = "numerator",           label = "Numerator"),
+  list(key = "denominator",         label = "Denominator"),
+  list(key = "unit_of_measure",     label = "Unit of Measure"),
+  list(key = "data_source",         label = "Data Source"),
+  list(key = "frequency",           label = "Frequency"),
+  list(key = "disaggregation",      label = "Disaggregation"),
+  list(key = "notes_caveats",       label = "Data Quality Checks")
+)
+
+# Escape special LaTeX characters in plain text (used for header)
+tex_esc <- function(x) {
+  if (is.null(x)) return("")
+  x <- as.character(x)
+  x <- gsub("\\\\", "\\\\textbackslash{}", x)
+  x <- gsub("([&%$#_{}])", "\\\\\\1", x)
+  x <- gsub("~",  "\\\\textasciitilde{}",  x)
+  x <- gsub("\\^", "\\\\textasciicircum{}", x)
+  x
+}
+
+# Convert a markdown string to a LaTeX fragment via pandoc
+pandoc_bin <- tryCatch(rmarkdown::pandoc_exec(), error = function(e) Sys.which("pandoc"))
+md_to_tex <- function(x) {
+  if (is.null(x) || !nzchar(trimws(x))) return("")
+  tmp <- tempfile(fileext = ".md")
+  writeLines(enc2utf8(as.character(x)), tmp)
+  out <- system2(pandoc_bin, c(shQuote(tmp), "-t", "latex"),
+                 stdout = TRUE, stderr = FALSE)
+  result <- paste(out, collapse = "\n")
+  # longtable cannot be nested inside a table cell — downgrade to tabular
+  result <- gsub("\\\\begin\\{longtable\\}(\\[[^]]*\\])?\\{([^}]*)\\}",
+                 "\\\\begin{tabular}{\\2}", result, perl = TRUE)
+  result <- gsub("\\\\end\\{longtable\\}", "\\\\end{tabular}", result)
+  # Remove longtable-only structural commands
+  result <- gsub("\\\\endhead\n?",      "", result)
+  result <- gsub("\\\\endfirsthead\n?", "", result)
+  result <- gsub("\\\\endlastfoot\n?",  "", result)
+  # \noalign{} after booktabs rules conflicts with colortbl inside cells
+  result <- gsub("\\\\noalign\\{\\}", "", result)
+  result
+}
+```
+
+```{r table}
+#| output: asis
+
+header <- paste0(
+  tex_esc(if (!is.null(meta$indicator_code)) meta$indicator_code else ""),
+  if (!is.null(meta$indicator_code) && !is.null(meta$indicator_name)) ": " else "",
+  tex_esc(if (!is.null(meta$indicator_name)) meta$indicator_name else "")
+)
+
+cat(
+  "\\begin{longtable}{",
+  "|>{\\bfseries\\small\\raggedright\\columncolor[HTML]{EEF2F7}}p{3.4cm}",
+  "|>{\\small}p{12cm}|}",
+  "\n\\hline\n",
+  sep = ""
+)
+
+# Header row — spans both columns, blue background
+cat(
+  "\\rowcolor[HTML]{1A4480}",
+  "\\multicolumn{2}{|l|}{",
+  "\\textcolor{white}{\\large\\bfseries ", header, "}",
+  "} \\\\[4pt]\n\\hline\n",
+  "\\endfirsthead\n",
+  "\\multicolumn{2}{c}{\\small\\textit{(continued from previous page)}} \\\\\n",
+  "\\hline\n",
+  "\\endhead\n",
+  sep = ""
+)
+
+# Data rows
+for (f in fields) {
+  val <- meta[[f$key]]
+  if (!is.null(val) && nzchar(trimws(as.character(val)))) {
+    cat(tex_esc(f$label), " & ", md_to_tex(val), " \\\\[3pt]\n\\hline\n", sep = "")
+  }
+}
+
+cat("\\end{longtable}\n")
+```

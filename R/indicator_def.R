@@ -14,8 +14,7 @@
   list(key = "disaggregation",      label = "Disaggregation"),
   list(key = "filters",             label = "Filters"),
   list(key = "acceptance_criteria", label = "Acceptance Criteria"),
-  list(key = "sdg_who_ref",         label = "SDG / WHO Reference"),
-  list(key = "notes_caveats",       label = "Notes & Caveats")
+  list(key = "notes_caveats",       label = "Data Quality Checks")
 )
 
 # Parse YAML frontmatter from a .qmd file (ignores body below second ---)
@@ -79,7 +78,7 @@ def_panel_ui <- function(id) {
       ),
       downloadButton(
         paste0("dl_def_", id),
-        label = HTML('<i class="bi bi-download me-1"></i>PDF'),
+        label = "PDF",
         class = "btn btn-sm btn-outline-secondary ms-auto ind-def-dl-btn"
       )
     ),
@@ -122,8 +121,8 @@ indicator_def_only_ui <- function(id) {
 
 # Register downloadHandlers for all indicator definition PDFs
 def_download_server <- function(input, output, session, ids) {
-  def_dir <- normalizePath("definitions")
-  template <- file.path(def_dir, "pdf_template.Rmd")
+  def_dir  <- normalizePath("definitions")
+  template <- file.path(def_dir, "pdf_template.qmd")
   lapply(ids, function(id) {
     local({
       .id <- id
@@ -136,13 +135,18 @@ def_download_server <- function(input, output, session, ids) {
           paste0(nm, "_definition.pdf")
         },
         content = function(file) {
-          rmarkdown::render(
-            template,
-            params            = list(id = .id, def_dir = def_dir),
-            output_file       = file,
-            intermediates_dir = tempdir(),
-            quiet             = TRUE
+          tmp_dir  <- tempfile()
+          dir.create(tmp_dir)
+          tmp_tmpl <- file.path(tmp_dir, "pdf_template.qmd")
+          file.copy(template, tmp_tmpl)
+          out_name <- paste0(.id, "_definition.pdf")
+          quarto::quarto_render(
+            tmp_tmpl,
+            execute_params = list(id = .id, def_dir = def_dir),
+            output_file    = out_name,
+            quiet          = TRUE
           )
+          file.copy(file.path(tmp_dir, out_name), file, overwrite = TRUE)
         }
       )
     })

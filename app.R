@@ -16,6 +16,8 @@ source("R/sha_deliveries.R")
 # Add new indicators here — no other changes needed.
 # ==============================================================================
 
+GUIDE_VERSION <- "1.0"
+
 INDICATORS <- list(
   list(id = "apx", label = "Unpaid Claims in ERP",
        icon = "bi-file-earmark-check", category = "Claim Flow"),
@@ -94,6 +96,15 @@ app_sidebar <- sidebar(
   # Indicator navigation
   div(class = "sidebar-nav-list",
     .build_sidebar_nav(INDICATORS)
+  ),
+
+  # Export reference guide
+  div(class = "px-3 mb-2",
+    downloadButton(
+      "dl_reference_guide",
+      label = paste0("Reference Guide v", GUIDE_VERSION),
+      class = "btn btn-sm w-100 sidebar-guide-btn"
+    )
   ),
 
   # Dummy data disclaimer
@@ -225,6 +236,21 @@ app_css <- HTML("
   }
   .sidebar-nav-item.active .sidebar-nav-icon { opacity: .9; }
   .sidebar-nav-icon { font-size: .9rem; flex-shrink: 0; }
+
+  /* ── Reference guide export button ─────────────────────────────────── */
+  .sidebar-guide-btn {
+    font-size: .74rem !important; font-weight: 600 !important;
+    color: var(--primary) !important;
+    background: oklch(0.95 0.025 232) !important;
+    border: 1px solid oklch(0.86 0.04 232) !important;
+    border-radius: .45rem !important;
+    transition: background .15s, color .15s;
+  }
+  .sidebar-guide-btn:hover {
+    background: var(--primary) !important;
+    color: white !important;
+    border-color: var(--primary) !important;
+  }
 
   /* ── Dummy data disclaimer ──────────────────────────────────────────── */
   .sidebar-disclaimer {
@@ -546,7 +572,7 @@ app_js <- HTML("
 # ==============================================================================
 
 ui <- page_sidebar(
-  title   = "UHC Analytics Mockup",
+  title   = "UHC Indicator Reference Guide",
   theme   = bs_theme(version = 5, primary = "#0e82b5"),   # ≈ oklch(0.55 0.16 232)
   sidebar = app_sidebar,
   fillable = FALSE,
@@ -612,6 +638,32 @@ server <- function(input, output, session) {
   cancer_server(input, output, session)
   deliveries_server(input, output, session)
   def_download_server(input, output, session, sapply(INDICATORS, `[[`, "id"))
+
+  output$dl_reference_guide <- downloadHandler(
+    filename = function() paste0("UHC_Indicator_Reference_Guide_v", GUIDE_VERSION, ".pdf"),
+    content  = function(file) {
+      def_dir  <- normalizePath("definitions")
+      template <- file.path(def_dir, "reference_guide_template.qmd")
+      tmp_dir  <- tempfile()
+      dir.create(tmp_dir)
+      tmp_tmpl <- file.path(tmp_dir, "reference_guide_template.qmd")
+      tmpl_lines <- readLines(template, encoding = "UTF-8")
+      tmpl_lines <- gsub("VERSION_PLACEHOLDER", GUIDE_VERSION, tmpl_lines, fixed = TRUE)
+      writeLines(tmpl_lines, tmp_tmpl)
+      out_name <- paste0("UHC_Reference_Guide_v", GUIDE_VERSION, ".pdf")
+      quarto::quarto_render(
+        tmp_tmpl,
+        execute_params = list(
+          ids     = sapply(INDICATORS, `[[`, "id"),
+          def_dir = def_dir,
+          version = GUIDE_VERSION
+        ),
+        output_file = out_name,
+        quiet       = TRUE
+      )
+      file.copy(file.path(tmp_dir, out_name), file, overwrite = TRUE)
+    }
+  )
 }
 
 shinyApp(ui = ui, server = server)
