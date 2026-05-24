@@ -2,6 +2,10 @@ library(shiny)
 library(bslib)
 library(jsonlite)
 
+if (!tinytex::is_tinytex() && !nzchar(Sys.which("xelatex"))) {
+  tinytex::install_tinytex()
+}
+
 source("R/helpers.R")
 source("R/indicator_def.R")
 source("R/approved_unpaid.R")
