@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "locale": "UTF-8",
+  "locale": "en_US",
   "platform": "4.5.3",
   "metadata": {
     "appmode": "shiny",
@@ -15,40 +15,6 @@
     }
   },
   "packages": {
-    "DT": {
-      "Source": "CRAN",
-      "Repository": "https://packagemanager.posit.co/cran/latest",
-      "description": {
-        "Type": "Package",
-        "Package": "DT",
-        "Title": "A Wrapper of the JavaScript Library 'DataTables'",
-        "Version": "0.34.0",
-        "Authors@R": "c(\n    person(\"Yihui\", \"Xie\", role = \"aut\"),\n    person(\"Joe\", \"Cheng\", , \"joe@posit.co\", role = \"aut\"),\n    person(\"Xianying\", \"Tan\", role = \"aut\"),\n    person(\"Garrick\", \"Aden-Buie\", , \"garrick@posit.co\", role = c(\"aut\", \"cre\"),\n           comment = c(ORCID = \"0000-0002-7111-0077\")),\n    person(\"JJ\", \"Allaire\", role = \"ctb\"),\n    person(\"Maximilian\", \"Girlich\", role = \"ctb\"),\n    person(\"Greg\", \"Freedman Ellis\", role = \"ctb\"),\n    person(\"Johannes\", \"Rauh\", role = \"ctb\"),\n    person(\"SpryMedia Limited\", role = c(\"ctb\", \"cph\"),\n           comment = \"DataTables in htmlwidgets/lib\"),\n    person(\"Brian\", \"Reavis\", role = c(\"ctb\", \"cph\"),\n           comment = \"selectize.js in htmlwidgets/lib\"),\n    person(\"Leon\", \"Gersen\", role = c(\"ctb\", \"cph\"),\n           comment = \"noUiSlider in htmlwidgets/lib\"),\n    person(\"Bartek\", \"Szopka\", role = c(\"ctb\", \"cph\"),\n           comment = \"jquery.highlight.js in htmlwidgets/lib\"),\n    person(\"Alex\", \"Pickering\", role = \"ctb\"),\n    person(\"William\", \"Holmes\", role = \"ctb\"),\n    person(\"Mikko\", \"Marttila\", role = \"ctb\"),\n    person(\"Andres\", \"Quintero\", role = \"ctb\"),\n    person(\"Stéphane\", \"Laurent\", role = \"ctb\"),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"))\n  )",
-        "Description": "Data objects in R can be rendered as HTML tables using the\n    JavaScript library 'DataTables' (typically via R Markdown or Shiny).\n    The 'DataTables' library has been included in this R package. The\n    package name 'DT' is an abbreviation of 'DataTables'.",
-        "License": "MIT + file LICENSE",
-        "URL": "https://github.com/rstudio/DT",
-        "BugReports": "https://github.com/rstudio/DT/issues",
-        "Imports": "crosstalk, htmltools (>= 0.3.6), htmlwidgets (>= 1.3),\njquerylib, jsonlite (>= 0.9.16), magrittr, promises",
-        "Suggests": "bslib, future, httpuv, knitr (>= 1.8), rmarkdown, shiny (>=\n1.6), testit, tibble",
-        "VignetteBuilder": "knitr",
-        "Encoding": "UTF-8",
-        "RoxygenNote": "7.3.2",
-        "NeedsCompilation": "no",
-        "Packaged": "2025-09-02 13:12:27 UTC; garrick",
-        "Author": "Yihui Xie [aut],\n  Joe Cheng [aut],\n  Xianying Tan [aut],\n  Garrick Aden-Buie [aut, cre] (ORCID:\n    <https://orcid.org/0000-0002-7111-0077>),\n  JJ Allaire [ctb],\n  Maximilian Girlich [ctb],\n  Greg Freedman Ellis [ctb],\n  Johannes Rauh [ctb],\n  SpryMedia Limited [ctb, cph] (DataTables in htmlwidgets/lib),\n  Brian Reavis [ctb, cph] (selectize.js in htmlwidgets/lib),\n  Leon Gersen [ctb, cph] (noUiSlider in htmlwidgets/lib),\n  Bartek Szopka [ctb, cph] (jquery.highlight.js in htmlwidgets/lib),\n  Alex Pickering [ctb],\n  William Holmes [ctb],\n  Mikko Marttila [ctb],\n  Andres Quintero [ctb],\n  Stéphane Laurent [ctb],\n  Posit Software, PBC [cph, fnd]",
-        "Maintainer": "Garrick Aden-Buie <garrick@posit.co>",
-        "Repository": "RSPM",
-        "Date/Publication": "2025-09-02 22:00:06 UTC",
-        "Built": "R 4.5.0; ; 2025-09-03 17:32:54 UTC; unix",
-        "RemoteType": "standard",
-        "RemoteRef": "DT",
-        "RemotePkgRef": "DT",
-        "RemoteRepos": "https://packagemanager.posit.co/cran/latest",
-        "RemoteReposName": "CRAN",
-        "RemotePkgPlatform": "aarch64-apple-darwin20",
-        "RemoteSha": "0.34.0"
-      }
-    },
     "R6": {
       "Source": "CRAN",
       "Repository": "https://packagemanager.posit.co/cran/latest",
@@ -291,40 +257,6 @@
         "RemoteReposName": "CRAN",
         "RemotePkgPlatform": "aarch64-apple-darwin20",
         "RemoteSha": "2.0.0"
-      }
-    },
-    "crosstalk": {
-      "Source": "CRAN",
-      "Repository": "https://packagemanager.posit.co/cran/latest",
-      "description": {
-        "Type": "Package",
-        "Package": "crosstalk",
-        "Title": "Inter-Widget Interactivity for HTML Widgets",
-        "Version": "1.2.2",
-        "Authors@R": "c(\n    person(\"Joe\", \"Cheng\", , \"joe@posit.co\", role = \"aut\"),\n    person(\"Carson\", \"Sievert\", , \"carson@posit.co\", role = c(\"aut\", \"cre\"),\n           comment = c(ORCID = \"0000-0002-4958-2844\")),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\")),\n    person(, \"jQuery Foundation\", role = \"cph\",\n           comment = \"jQuery library and jQuery UI library\"),\n    person(, \"jQuery contributors\", role = c(\"ctb\", \"cph\"),\n           comment = \"jQuery library; authors listed in inst/www/shared/jquery-AUTHORS.txt\"),\n    person(\"Mark\", \"Otto\", role = \"ctb\",\n           comment = \"Bootstrap library\"),\n    person(\"Jacob\", \"Thornton\", role = \"ctb\",\n           comment = \"Bootstrap library\"),\n    person(, \"Bootstrap contributors\", role = \"ctb\",\n           comment = \"Bootstrap library\"),\n    person(, \"Twitter, Inc\", role = \"cph\",\n           comment = \"Bootstrap library\"),\n    person(\"Brian\", \"Reavis\", role = c(\"ctb\", \"cph\"),\n           comment = \"selectize.js library\"),\n    person(\"Kristopher Michael\", \"Kowal\", role = c(\"ctb\", \"cph\"),\n           comment = \"es5-shim library\"),\n    person(, \"es5-shim contributors\", role = c(\"ctb\", \"cph\"),\n           comment = \"es5-shim library\"),\n    person(\"Denis\", \"Ineshin\", role = c(\"ctb\", \"cph\"),\n           comment = \"ion.rangeSlider library\"),\n    person(\"Sami\", \"Samhuri\", role = c(\"ctb\", \"cph\"),\n           comment = \"Javascript strftime library\")\n  )",
-        "Description": "Provides building blocks for allowing HTML widgets to\n    communicate with each other, with Shiny or without (i.e. static .html\n    files). Currently supports linked brushing and filtering.",
-        "License": "MIT + file LICENSE",
-        "URL": "https://rstudio.github.io/crosstalk/,\nhttps://github.com/rstudio/crosstalk",
-        "BugReports": "https://github.com/rstudio/crosstalk/issues",
-        "Imports": "htmltools (>= 0.3.6), jsonlite, lazyeval, R6",
-        "Suggests": "bslib, ggplot2, sass, shiny, testthat (>= 2.1.0)",
-        "Config/Needs/website": "jcheng5/d3scatter, DT, leaflet, rmarkdown",
-        "Encoding": "UTF-8",
-        "RoxygenNote": "7.3.2",
-        "NeedsCompilation": "no",
-        "Packaged": "2025-08-26 22:06:47 UTC; cpsievert",
-        "Author": "Joe Cheng [aut],\n  Carson Sievert [aut, cre] (ORCID:\n    <https://orcid.org/0000-0002-4958-2844>),\n  Posit Software, PBC [cph, fnd],\n  jQuery Foundation [cph] (jQuery library and jQuery UI library),\n  jQuery contributors [ctb, cph] (jQuery library; authors listed in\n    inst/www/shared/jquery-AUTHORS.txt),\n  Mark Otto [ctb] (Bootstrap library),\n  Jacob Thornton [ctb] (Bootstrap library),\n  Bootstrap contributors [ctb] (Bootstrap library),\n  Twitter, Inc [cph] (Bootstrap library),\n  Brian Reavis [ctb, cph] (selectize.js library),\n  Kristopher Michael Kowal [ctb, cph] (es5-shim library),\n  es5-shim contributors [ctb, cph] (es5-shim library),\n  Denis Ineshin [ctb, cph] (ion.rangeSlider library),\n  Sami Samhuri [ctb, cph] (Javascript strftime library)",
-        "Maintainer": "Carson Sievert <carson@posit.co>",
-        "Repository": "RSPM",
-        "Date/Publication": "2025-08-26 23:50:02 UTC",
-        "Built": "R 4.5.0; ; 2025-08-27 04:47:45 UTC; unix",
-        "RemoteType": "standard",
-        "RemoteRef": "crosstalk",
-        "RemotePkgRef": "crosstalk",
-        "RemoteRepos": "https://packagemanager.posit.co/cran/latest",
-        "RemoteReposName": "CRAN",
-        "RemotePkgPlatform": "aarch64-apple-darwin20",
-        "RemoteSha": "1.2.2"
       }
     },
     "digest": {
@@ -613,41 +545,6 @@
         "RemoteSha": "0.5.9"
       }
     },
-    "htmlwidgets": {
-      "Source": "CRAN",
-      "Repository": "https://packagemanager.posit.co/cran/latest",
-      "description": {
-        "Type": "Package",
-        "Package": "htmlwidgets",
-        "Title": "HTML Widgets for R",
-        "Version": "1.6.4",
-        "Authors@R": "c(\n    person(\"Ramnath\", \"Vaidyanathan\", role = c(\"aut\", \"cph\")),\n    person(\"Yihui\", \"Xie\", role = \"aut\"),\n    person(\"JJ\", \"Allaire\", role = \"aut\"),\n    person(\"Joe\", \"Cheng\", , \"joe@posit.co\", role = \"aut\"),\n    person(\"Carson\", \"Sievert\", , \"carson@posit.co\", role = c(\"aut\", \"cre\"),\n           comment = c(ORCID = \"0000-0002-4958-2844\")),\n    person(\"Kenton\", \"Russell\", role = c(\"aut\", \"cph\")),\n    person(\"Ellis\", \"Hughes\", role = \"ctb\"),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"))\n  )",
-        "Description": "A framework for creating HTML widgets that render in various\n    contexts including the R console, 'R Markdown' documents, and 'Shiny'\n    web applications.",
-        "License": "MIT + file LICENSE",
-        "URL": "https://github.com/ramnathv/htmlwidgets",
-        "BugReports": "https://github.com/ramnathv/htmlwidgets/issues",
-        "Imports": "grDevices, htmltools (>= 0.5.7), jsonlite (>= 0.9.16), knitr\n(>= 1.8), rmarkdown, yaml",
-        "Suggests": "testthat",
-        "Enhances": "shiny (>= 1.1)",
-        "VignetteBuilder": "knitr",
-        "Encoding": "UTF-8",
-        "RoxygenNote": "7.2.3",
-        "NeedsCompilation": "no",
-        "Packaged": "2023-12-06 00:11:16 UTC; cpsievert",
-        "Author": "Ramnath Vaidyanathan [aut, cph],\n  Yihui Xie [aut],\n  JJ Allaire [aut],\n  Joe Cheng [aut],\n  Carson Sievert [aut, cre] (<https://orcid.org/0000-0002-4958-2844>),\n  Kenton Russell [aut, cph],\n  Ellis Hughes [ctb],\n  Posit Software, PBC [cph, fnd]",
-        "Maintainer": "Carson Sievert <carson@posit.co>",
-        "Repository": "RSPM",
-        "Date/Publication": "2023-12-06 06:00:06 UTC",
-        "Built": "R 4.5.0; ; 2025-04-06 04:47:46 UTC; unix",
-        "RemoteType": "standard",
-        "RemoteRef": "htmlwidgets",
-        "RemotePkgRef": "htmlwidgets",
-        "RemoteRepos": "https://packagemanager.posit.co/cran/latest",
-        "RemoteReposName": "CRAN",
-        "RemotePkgPlatform": "aarch64-apple-darwin20",
-        "RemoteSha": "1.6.4"
-      }
-    },
     "httpuv": {
       "Source": "CRAN",
       "Repository": "https://packagemanager.posit.co/cran/latest",
@@ -829,39 +726,6 @@
         "RemoteSha": "1.4.8"
       }
     },
-    "lazyeval": {
-      "Source": "CRAN",
-      "Repository": "https://packagemanager.posit.co/cran/latest",
-      "description": {
-        "Package": "lazyeval",
-        "Version": "0.2.3",
-        "Title": "Lazy (Non-Standard) Evaluation",
-        "Description": "An alternative approach to non-standard evaluation using\n    formulas. Provides a full implementation of LISP style 'quasiquotation',\n    making it easier to generate code with other code.",
-        "Authors@R": "c(\n    person(\"Hadley\", \"Wickham\", ,\"hadley@rstudio.com\", c(\"aut\", \"cre\")),\n    person(\"RStudio\", role = \"cph\")\n    )",
-        "License": "GPL-3",
-        "Depends": "R (>= 3.1.0)",
-        "Imports": "rlang",
-        "Suggests": "knitr, rmarkdown (>= 0.2.65), testthat, covr",
-        "VignetteBuilder": "knitr",
-        "RoxygenNote": "7.3.3",
-        "Config/build/compilation-database": "true",
-        "NeedsCompilation": "yes",
-        "Packaged": "2026-04-03 09:37:04 UTC; lionel",
-        "Author": "Hadley Wickham [aut, cre],\n  RStudio [cph]",
-        "Maintainer": "Hadley Wickham <hadley@rstudio.com>",
-        "Repository": "RSPM",
-        "Date/Publication": "2026-04-04 05:10:53 UTC",
-        "Encoding": "UTF-8",
-        "Built": "R 4.5.0; x86_64-pc-linux-gnu; 2026-04-05 05:22:05 UTC; unix",
-        "RemoteType": "standard",
-        "RemoteRef": "lazyeval",
-        "RemotePkgRef": "lazyeval",
-        "RemoteRepos": "https://packagemanager.posit.co/cran/latest",
-        "RemoteReposName": "CRAN",
-        "RemotePkgPlatform": "aarch64-apple-darwin20",
-        "RemoteSha": "0.2.3"
-      }
-    },
     "lifecycle": {
       "Source": "CRAN",
       "Repository": "https://packagemanager.posit.co/cran/latest",
@@ -1033,6 +897,42 @@
         "RemoteSha": "0.2.0"
       }
     },
+    "processx": {
+      "Source": "CRAN",
+      "Repository": "https://packagemanager.posit.co/cran/latest",
+      "description": {
+        "Package": "processx",
+        "Title": "Execute and Control System Processes",
+        "Version": "3.9.0",
+        "Authors@R": "c(\n    person(\"Gábor\", \"Csárdi\", , \"csardi.gabor@gmail.com\", role = c(\"aut\", \"cre\", \"cph\"),\n           comment = c(ORCID = \"0000-0001-7098-9676\")),\n    person(\"Winston\", \"Chang\", role = \"aut\"),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"),\n           comment = c(ROR = \"03wc8by49\")),\n    person(\"Ascent Digital Services\", role = c(\"cph\", \"fnd\"))\n  )",
+        "Description": "Tools to run system processes in the background.  It can\n    check if a background process is running; wait on a background process\n    to finish; get the exit status of finished processes; kill background\n    processes. It can read the standard output and error of the processes,\n    using non-blocking connections. 'processx' can poll a process for\n    standard output or error, with a timeout. It can also poll several\n    processes at once.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://processx.r-lib.org, https://github.com/r-lib/processx",
+        "BugReports": "https://github.com/r-lib/processx/issues",
+        "Depends": "R (>= 3.4.0)",
+        "Imports": "ps (>= 1.9.3), R6, utils",
+        "Suggests": "callr (>= 3.7.3), cli (>= 3.3.0), codetools, covr, curl,\ndebugme, parallel, rlang (>= 1.0.2), testthat (>= 3.0.0),\nwebfakes, withr",
+        "Config/Needs/website": "tidyverse/tidytemplate",
+        "Config/testthat/edition": "3",
+        "Config/usethis/last-upkeep": "2025-04-25",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.3",
+        "NeedsCompilation": "yes",
+        "Packaged": "2026-04-22 10:56:15 UTC; gaborcsardi",
+        "Author": "Gábor Csárdi [aut, cre, cph] (ORCID:\n    <https://orcid.org/0000-0001-7098-9676>),\n  Winston Chang [aut],\n  Posit Software, PBC [cph, fnd] (ROR: <https://ror.org/03wc8by49>),\n  Ascent Digital Services [cph, fnd]",
+        "Maintainer": "Gábor Csárdi <csardi.gabor@gmail.com>",
+        "Repository": "RSPM",
+        "Date/Publication": "2026-04-22 12:00:02 UTC",
+        "Built": "R 4.5.0; x86_64-apple-darwin20; 2026-04-23 18:52:52 UTC; unix",
+        "RemoteType": "standard",
+        "RemoteRef": "processx",
+        "RemotePkgRef": "processx",
+        "RemoteRepos": "https://packagemanager.posit.co/cran/latest",
+        "RemoteReposName": "CRAN",
+        "RemotePkgPlatform": "aarch64-apple-darwin20",
+        "RemoteSha": "3.9.0"
+      }
+    },
     "promises": {
       "Source": "CRAN",
       "Repository": "https://packagemanager.posit.co/cran/latest",
@@ -1070,6 +970,79 @@
         "RemoteReposName": "CRAN",
         "RemotePkgPlatform": "aarch64-apple-darwin20",
         "RemoteSha": "1.5.0"
+      }
+    },
+    "ps": {
+      "Source": "CRAN",
+      "Repository": "https://packagemanager.posit.co/cran/latest",
+      "description": {
+        "Package": "ps",
+        "Title": "List, Query, Manipulate System Processes",
+        "Version": "1.9.3",
+        "Authors@R": "c(\n    person(\"Jay\", \"Loden\", role = \"aut\"),\n    person(\"Dave\", \"Daeschler\", role = \"aut\"),\n    person(\"Giampaolo\", \"Rodola'\", role = \"aut\"),\n    person(\"Gábor\", \"Csárdi\", , \"csardi.gabor@gmail.com\", role = c(\"aut\", \"cre\")),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"),\n           comment = c(ROR = \"03wc8by49\"))\n  )",
+        "Description": "List, query and manipulate all system processes, on\n    'Windows', 'Linux' and 'macOS'.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://github.com/r-lib/ps, https://ps.r-lib.org/",
+        "BugReports": "https://github.com/r-lib/ps/issues",
+        "Depends": "R (>= 3.4)",
+        "Imports": "utils",
+        "Suggests": "callr, covr, curl, pillar, pingr, processx (>= 3.1.0), R6,\nrlang, testthat (>= 3.0.0), webfakes, withr",
+        "Biarch": "true",
+        "Config/Needs/website": "tidyverse/tidytemplate",
+        "Config/testthat/edition": "3",
+        "Config/usethis/last-upkeep": "2025-04-28",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.3",
+        "NeedsCompilation": "yes",
+        "Packaged": "2026-04-20 12:53:07 UTC; gaborcsardi",
+        "Author": "Jay Loden [aut],\n  Dave Daeschler [aut],\n  Giampaolo Rodola' [aut],\n  Gábor Csárdi [aut, cre],\n  Posit Software, PBC [cph, fnd] (ROR: <https://ror.org/03wc8by49>)",
+        "Maintainer": "Gábor Csárdi <csardi.gabor@gmail.com>",
+        "Repository": "RSPM",
+        "Date/Publication": "2026-04-20 13:40:03 UTC",
+        "Built": "R 4.5.0; x86_64-apple-darwin20; 2026-04-21 04:59:10 UTC; unix",
+        "RemoteType": "standard",
+        "RemoteRef": "ps",
+        "RemotePkgRef": "ps",
+        "RemoteRepos": "https://packagemanager.posit.co/cran/latest",
+        "RemoteReposName": "CRAN",
+        "RemotePkgPlatform": "aarch64-apple-darwin20",
+        "RemoteSha": "1.9.3"
+      }
+    },
+    "quarto": {
+      "Source": "CRAN",
+      "Repository": "https://packagemanager.posit.co/cran/latest",
+      "description": {
+        "Package": "quarto",
+        "Title": "R Interface to 'Quarto' Markdown Publishing System",
+        "Version": "1.5.1",
+        "Authors@R": "c(\n    person(\"JJ\", \"Allaire\", , \"jj@posit.co\", role = \"aut\",\n           comment = c(ORCID = \"0000-0003-0174-9868\")),\n    person(\"Christophe\", \"Dervieux\", , \"cderv@posit.co\", role = c(\"cre\", \"aut\"),\n           comment = c(ORCID = \"0000-0003-4474-2498\")),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\")),\n    person(\"Gordon\", \"Woodhull\", role = \"ctb\")\n  )",
+        "Description": "Convert R Markdown documents and 'Jupyter' notebooks to a\n    variety of output formats using 'Quarto'.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://github.com/quarto-dev/quarto-r,\nhttps://quarto-dev.github.io/quarto-r/",
+        "BugReports": "https://github.com/quarto-dev/quarto-r/issues",
+        "Depends": "R (>= 4.1.0)",
+        "Imports": "cli, fs, htmltools, jsonlite, later, lifecycle, processx,\nrlang, rmarkdown, rstudioapi, tools, utils, xfun, yaml (>=\n2.3.10)",
+        "Suggests": "bslib, callr, curl, dplyr, flextable, ggiraph, ggplot2, gt,\nheatmaply, kableExtra, knitr, palmerpenguins, patchwork,\npkgload, plotly, rsconnect (>= 0.8.26), testthat (>= 3.1.7),\nthematic, tidyverse, tinytable, whoami, withr",
+        "VignetteBuilder": "quarto",
+        "Config/testthat/edition": "3",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.2",
+        "SystemRequirements": "Quarto command line tool\n(<https://github.com/quarto-dev/quarto-cli>).",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-09-04 13:45:05 UTC; chris",
+        "Author": "JJ Allaire [aut] (ORCID: <https://orcid.org/0000-0003-0174-9868>),\n  Christophe Dervieux [cre, aut] (ORCID:\n    <https://orcid.org/0000-0003-4474-2498>),\n  Posit Software, PBC [cph, fnd],\n  Gordon Woodhull [ctb]",
+        "Maintainer": "Christophe Dervieux <cderv@posit.co>",
+        "Repository": "RSPM",
+        "Date/Publication": "2025-09-04 15:30:02 UTC",
+        "Built": "R 4.5.0; ; 2025-09-05 06:07:25 UTC; unix",
+        "RemoteType": "standard",
+        "RemoteRef": "quarto",
+        "RemotePkgRef": "quarto",
+        "RemoteRepos": "https://packagemanager.posit.co/cran/latest",
+        "RemoteReposName": "CRAN",
+        "RemotePkgPlatform": "aarch64-apple-darwin20",
+        "RemoteSha": "1.5.1"
       }
     },
     "rappdirs": {
@@ -1215,6 +1188,38 @@
         "RemoteReposName": "CRAN",
         "RemotePkgPlatform": "aarch64-apple-darwin20",
         "RemoteSha": "2.31"
+      }
+    },
+    "rstudioapi": {
+      "Source": "CRAN",
+      "Repository": "https://packagemanager.posit.co/cran/latest",
+      "description": {
+        "Package": "rstudioapi",
+        "Title": "Safely Access the RStudio API",
+        "Description": "Access the RStudio API (if available) and provide informative error\n    messages when it's not.",
+        "Version": "0.18.0",
+        "Authors@R": "c(\n    person(\"Kevin\", \"Ushey\", role = c(\"aut\", \"cre\"), email = \"kevin@rstudio.com\"),\n    person(\"JJ\", \"Allaire\", role = c(\"aut\"), email = \"jj@posit.co\"),\n    person(\"Hadley\", \"Wickham\", role = c(\"aut\"), email = \"hadley@posit.co\"),\n    person(\"Gary\", \"Ritchie\", role = c(\"aut\"), email = \"gary@posit.co\"),\n    person(family = \"RStudio\", role = \"cph\")\n    )",
+        "Maintainer": "Kevin Ushey <kevin@rstudio.com>",
+        "License": "MIT + file LICENSE",
+        "URL": "https://rstudio.github.io/rstudioapi/,\nhttps://github.com/rstudio/rstudioapi",
+        "BugReports": "https://github.com/rstudio/rstudioapi/issues",
+        "RoxygenNote": "7.3.3",
+        "Suggests": "testthat, knitr, rmarkdown, clipr, covr, curl, jsonlite,\nwithr",
+        "VignetteBuilder": "knitr",
+        "Encoding": "UTF-8",
+        "NeedsCompilation": "no",
+        "Packaged": "2026-01-15 18:05:24 UTC; kevin",
+        "Author": "Kevin Ushey [aut, cre],\n  JJ Allaire [aut],\n  Hadley Wickham [aut],\n  Gary Ritchie [aut],\n  RStudio [cph]",
+        "Repository": "RSPM",
+        "Date/Publication": "2026-01-16 09:10:02 UTC",
+        "Built": "R 4.5.0; ; 2026-01-17 05:01:09 UTC; unix",
+        "RemoteType": "standard",
+        "RemoteRef": "rstudioapi",
+        "RemotePkgRef": "rstudioapi",
+        "RemoteRepos": "https://packagemanager.posit.co/cran/latest",
+        "RemoteReposName": "CRAN",
+        "RemotePkgPlatform": "aarch64-apple-darwin20",
+        "RemoteSha": "0.18.0"
       }
     },
     "sass": {
@@ -1497,29 +1502,68 @@
     }
   },
   "files": {
+    ".Renviron": {
+      "checksum": "87e1a67edf56f3aafa43c84c41411da0"
+    },
     ".Rprofile": {
-      "checksum": "ea4c10bd6af0cfd41bc585c86970d392"
+      "checksum": "de34d2415fa8418ece9b909cdcd6521a"
     },
     "app.R": {
-      "checksum": "1237d19a664772004b0e42b91acbed17"
+      "checksum": "3a8f06fab4fb661c2129311402fcbade"
+    },
+    "definitions/age.qmd": {
+      "checksum": "85da204975ed26a5f448555df191410d"
+    },
+    "definitions/apx.qmd": {
+      "checksum": "0cd8e0fbfb34715839e25d3bf1ef5a39"
+    },
+    "definitions/cnc.qmd": {
+      "checksum": "a980e32c4667ccbf4bfca018cbee7e60"
+    },
+    "definitions/cur.qmd": {
+      "checksum": "96ad277c19dbd677726910bc1d61b1da"
+    },
+    "definitions/dlv.qmd": {
+      "checksum": "8084be822df441c285bb0d55796769b8"
+    },
+    "definitions/pdf_template.qmd": {
+      "checksum": "75541a1e073abe506db9b85c28acf89e"
+    },
+    "definitions/reference_guide_template.qmd": {
+      "checksum": "26a0a50417d43835e2c78db9aad84b76"
+    },
+    "definitions/tat.qmd": {
+      "checksum": "3dc07cc513c932d628ababdd928cee49"
     },
     "R/approved_unpaid.R": {
-      "checksum": "d0b95e8f668cd04d339f107100a2fd18"
+      "checksum": "06518b397089b1fb8adfe6d51d466db8"
     },
     "R/cancer_payments.R": {
-      "checksum": "048950be2a88515503a9dc482802a4c5"
+      "checksum": "274b1053c7679f159d10505608f43cfc"
+    },
+    "R/claims_ageing.R": {
+      "checksum": "17ad4e0d3e9782df78e3f04a5c55ac97"
     },
     "R/claims_tat.R": {
-      "checksum": "5c2d4a19977009813725edd8469b3f0d"
+      "checksum": "06d8fdbbcd78bc8e6fa94aa43607b5a1"
+    },
+    "R/definitions.R": {
+      "checksum": "fe9ae40382b30d1f2565b015cbbf1937"
     },
     "R/helpers.R": {
-      "checksum": "f16701df0f97b9a12007f0fd845a4af7"
+      "checksum": "750d0191ce74ca3c800ea7f1f4660b73"
+    },
+    "R/indicator_def.R": {
+      "checksum": "f9afdf51263b4d349b11904c808cbe4f"
+    },
+    "R/sha_deliveries.R": {
+      "checksum": "2793461762b5f1f38f0f68247ecd0699"
     },
     "README.md": {
-      "checksum": "e392994da824e255538340ace3b99a74"
+      "checksum": "27d4d0c78b29564102e167ced44e4048"
     },
     "renv.lock": {
-      "checksum": "56d22e8c803656a54cc10559e9f06b83"
+      "checksum": "0b89a62369a6ddf5d18b20e079cd9541"
     },
     "requirements/approved_unpaid_claims_summary.md": {
       "checksum": "085818816a1a9a3c64ae162e5b0df655"
@@ -1527,8 +1571,32 @@
     "requirements/cancer_patients_sha_payments_dashboard.md": {
       "checksum": "d2e3968d19dac89ce13e25c0efd90903"
     },
+    "requirements/claims_ageing_report.md": {
+      "checksum": "afc8211d6207f1b1a649055fe6b80254"
+    },
     "requirements/claims_tat_dashboard.md": {
       "checksum": "4789181c37106fb5af8aad5ae6d2ea0d"
+    },
+    "requirements/claims_under_review.md": {
+      "checksum": "d05e844369b9de449bc418db1b5fa9a8"
+    },
+    "requirements/sha_deliveries_dashboard.md": {
+      "checksum": "2f9fd7d13affddbd14ded333e6a6e878"
+    },
+    "www/requirements/approved_unpaid_claims_summary.md": {
+      "checksum": "085818816a1a9a3c64ae162e5b0df655"
+    },
+    "www/requirements/cancer_patients_sha_payments_dashboard.md": {
+      "checksum": "d2e3968d19dac89ce13e25c0efd90903"
+    },
+    "www/requirements/claims_ageing_report.md": {
+      "checksum": "afc8211d6207f1b1a649055fe6b80254"
+    },
+    "www/requirements/claims_tat_dashboard.md": {
+      "checksum": "4789181c37106fb5af8aad5ae6d2ea0d"
+    },
+    "www/requirements/sha_deliveries_dashboard.md": {
+      "checksum": "2f9fd7d13affddbd14ded333e6a6e878"
     }
   },
   "users": null
