@@ -1,13 +1,15 @@
 ---
 title: "UHC Indicator Reference Guide"
 subtitle: "Version VERSION_PLACEHOLDER"
+date: today
+date-format: "DD MMMM YYYY"
 format:
   pdf:
     pdf-engine: xelatex
     geometry: "margin=2cm, top=2.5cm"
     toc: true
-    toc-depth: 1
-    toc-title: "Indicators"
+    toc-depth: 2
+    toc-title: "Contents"
     include-in-header:
       text: |
         \usepackage{longtable}
@@ -17,9 +19,10 @@ format:
         \usepackage{booktabs}
         \providecommand{\tightlist}{\setlength{\itemsep}{2pt}\setlength{\parskip}{0pt}}
 params:
-  ids:    ["apx", "tat", "age", "cnc", "dlv", "cur"]
-  def_dir: "definitions"
-  version: "1.0"
+  ids:        ["apx", "tat", "age", "cnc", "dlv", "cur"]
+  categories: ["Claim Flow", "Claim Flow", "Claim Flow", "Health Services", "Health Services", "Claim Flow"]
+  def_dir:    "definitions"
+  version:    "1.0"
 execute:
   echo: false
   warning: false
@@ -79,7 +82,7 @@ render_indicator_table <- function(id) {
   )
 
   # Section heading for TOC (invisible rule keeps spacing tight)
-  cat("\\section*{", header, "}\n\\addcontentsline{toc}{section}{", header, "}\n\n", sep = "")
+  cat("\\subsection*{", header, "}\n\\addcontentsline{toc}{subsection}{", header, "}\n\n", sep = "")
 
   cat(
     "\\begin{longtable}",
@@ -108,15 +111,51 @@ render_indicator_table <- function(id) {
 }
 ```
 
-Generated `r format(Sys.Date(), "%d %B %Y")`
+\newpage
+
+\section*{Abbreviations}
+\addcontentsline{toc}{section}{Abbreviations}
+
+\begin{tabular}{|>{\bfseries\small}p{3cm}|>{\small}p{11.8cm}|}
+\hline
+\rowcolor[HTML]{1A4480} \textcolor{white}{\textbf{Abbreviation}} & \textcolor{white}{\textbf{Meaning}} \\
+\hline
+CR    & Claim Reference Number \\[2pt]\hline
+DHA   & Digital Health Agency \\[2pt]\hline
+ECCIF & Emergency, Chronic and Critical Illness Fund \\[2pt]\hline
+ERP   & Enterprise Resource Planning \\[2pt]\hline
+POMSF & Post-Operational Medical and Surgical Fund \\[2pt]\hline
+SHA   & Social Health Authority \\[2pt]\hline
+SHIF  & Social Health Insurance Fund \\[2pt]\hline
+TAT   & Turnaround Time \\[2pt]\hline
+UHC   & Universal Health Coverage \\[2pt]\hline
+\end{tabular}
+
+\newpage
+
+\section*{Acknowledgements}
+\addcontentsline{toc}{section}{Acknowledgements}
+
+\textit{[Acknowledgements text.]}
 
 \newpage
 
 ```{r indicators}
 #| output: asis
-ids <- params$ids
-for (i in seq_along(ids)) {
-  render_indicator_table(ids[[i]])
-  if (i < length(ids)) cat("\\newpage\n\n")
+ids        <- params$ids
+categories <- params$categories
+unique_cats <- unique(categories)
+
+for (ci in seq_along(unique_cats)) {
+  cat_label <- unique_cats[[ci]]
+  cat_tex   <- tex_esc(cat_label)
+  cat("\\section*{", cat_tex, "}\n\\addcontentsline{toc}{section}{", cat_tex, "}\n\n", sep = "")
+
+  cat_ids <- ids[categories == cat_label]
+  for (i in seq_along(cat_ids)) {
+    render_indicator_table(cat_ids[[i]])
+    if (i < length(cat_ids)) cat("\\newpage\n\n")
+  }
+  if (ci < length(unique_cats)) cat("\\newpage\n\n")
 }
 ```

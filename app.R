@@ -658,9 +658,10 @@ server <- function(input, output, session) {
       quarto::quarto_render(
         tmp_tmpl,
         execute_params = list(
-          ids     = sapply(INDICATORS, `[[`, "id"),
-          def_dir = def_dir,
-          version = GUIDE_VERSION
+          ids        = sapply(INDICATORS, `[[`, "id"),
+          categories = sapply(INDICATORS, `[[`, "category"),
+          def_dir    = def_dir,
+          version    = GUIDE_VERSION
         ),
         output_file = out_name,
         quiet       = TRUE
