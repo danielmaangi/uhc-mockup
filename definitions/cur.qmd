@@ -1,0 +1,44 @@
+---
+indicator_code: "CUR-001"
+indicator_name: "Claims Under Review"
+definition: |
+  Tracks the **volume and value of claims currently held in any review stage**. The metric gives   SHA and DHA a real-time picture.
+
+  Four review categories are recognised:
+
+  | Statuses Considered Under Review |
+  |---|
+  | Medical Review |
+  | Clinical Review |
+  | Manual Review |
+  | Approved |
+  | Payment Partial |
+  | Queued |
+  | Resubmitted Missing Documents |
+  | Sent for Payment Processing |
+  | Sent to Surveillance |
+  | Decline |
+
+numerator: |
+  Count or sum of claim values where for statuses listed in definition above.
+denominator: |
+  - Not applicable
+unit_of_measure: |
+  - **Count** — whole number of claims
+  - **Value** — Kenya Shillings (KES), displayed in Billions (B) on charts
+data_source: |
+  - Payor system
+frequency: |
+  - Daily, Weekly, Monthly
+disaggregation: |
+  - Review category (Medical / Clinical / Manual / Other Under Review)
+  - Period
+  - County
+  - Facility 
+sdg_who_ref: |
+  **SDG 3.8** — Achieve universal health coverage, including financial risk protection
+  and access to quality essential health care services. Reducing the under-review backlog
+  is a proxy for timely provider reimbursement and UHC system efficiency.
+notes_caveats: |
+    Not applicable
+---

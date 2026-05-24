@@ -1,0 +1,46 @@
+---
+output:
+  pdf_document:
+    latex_engine: xelatex
+    keep_tex: false
+geometry: "margin=2.5cm"
+params:
+  id: "cur"
+  def_dir: "definitions"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+path   <- file.path(params$def_dir, paste0(params$id, ".qmd"))
+lines  <- readLines(path, warn = FALSE, encoding = "UTF-8")
+delims <- which(trimws(lines) == "---")
+meta   <- yaml::yaml.load(paste(lines[(delims[1]+1):(delims[2]-1)], collapse = "\n"))
+
+fields <- list(
+  list(key = "definition",          label = "Definition"),
+  list(key = "numerator",           label = "Numerator"),
+  list(key = "denominator",         label = "Denominator"),
+  list(key = "unit_of_measure",     label = "Unit of Measure"),
+  list(key = "data_source",         label = "Data Source"),
+  list(key = "frequency",           label = "Frequency"),
+  list(key = "disaggregation",      label = "Disaggregation"),
+  list(key = "sdg_who_ref",         label = "SDG / WHO Reference"),
+  list(key = "notes_caveats",       label = "Notes & Caveats")
+)
+```
+
+# `r if (!is.null(meta$indicator_name)) meta$indicator_name else params$id`
+
+**Indicator Code:** `r if (!is.null(meta$indicator_code)) meta$indicator_code else "—"`
+
+---
+
+```{r results='asis'}
+for (f in fields) {
+  val <- meta[[f$key]]
+  if (!is.null(val) && nzchar(trimws(as.character(val)))) {
+    cat("## ", f$label, "\n\n")
+    cat(as.character(val), "\n\n")
+  }
+}
+```

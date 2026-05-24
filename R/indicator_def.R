@@ -5,15 +5,17 @@
 # ==============================================================================
 
 .DEF_FIELDS <- list(
-  list(key = "definition",      label = "Definition"),
-  list(key = "numerator",       label = "Numerator"),
-  list(key = "denominator",     label = "Denominator"),
-  list(key = "unit_of_measure", label = "Unit of Measure"),
-  list(key = "data_source",     label = "Data Source"),
-  list(key = "frequency",       label = "Frequency"),
-  list(key = "disaggregation",  label = "Disaggregation"),
-  list(key = "sdg_who_ref",     label = "SDG / WHO Reference"),
-  list(key = "notes_caveats",   label = "Notes & Caveats")
+  list(key = "definition",          label = "Definition"),
+  list(key = "numerator",           label = "Numerator"),
+  list(key = "denominator",         label = "Denominator"),
+  list(key = "unit_of_measure",     label = "Unit of Measure"),
+  list(key = "data_source",         label = "Data Source"),
+  list(key = "frequency",           label = "Frequency"),
+  list(key = "disaggregation",      label = "Disaggregation"),
+  list(key = "filters",             label = "Filters"),
+  list(key = "acceptance_criteria", label = "Acceptance Criteria"),
+  list(key = "sdg_who_ref",         label = "SDG / WHO Reference"),
+  list(key = "notes_caveats",       label = "Notes & Caveats")
 )
 
 # Parse YAML frontmatter from a .qmd file (ignores body below second ---)
@@ -29,7 +31,7 @@
 # Render a markdown string to an HTML fragment (returns shiny HTML object)
 .md_html <- function(x) {
   if (is.null(x) || !nzchar(trimws(as.character(x)))) return(NULL)
-  HTML(commonmark::markdown_html(as.character(x), smart = TRUE))
+  HTML(commonmark::markdown_html(as.character(x), smart = TRUE, extensions = TRUE))
 }
 
 # Cache parsed definitions at startup so files aren't re-read per render
@@ -74,6 +76,11 @@ def_panel_ui <- function(id) {
         tags$span(class = "ind-def-code", meta$indicator_code),
       div(class = "ind-def-name",
         if (!is.null(meta$indicator_name)) meta$indicator_name else id
+      ),
+      downloadButton(
+        paste0("dl_def_", id),
+        label = HTML('<i class="bi bi-download me-1"></i>PDF'),
+        class = "btn btn-sm btn-outline-secondary ms-auto ind-def-dl-btn"
       )
     ),
     div(class = "ind-def-fields", do.call(tagList, field_rows))
@@ -97,6 +104,49 @@ indicator_tabs_ui <- function(id, mockup_ui) {
       )
     )
   )
+}
+
+# Definition-only panel (no Mockup tab) — used when no mockup has been built yet
+indicator_def_only_ui <- function(id) {
+  div(class = "ind-view-tabs",
+    navset_tab(
+      id = paste0("ind_view_", id),
+      nav_panel(
+        title = tagList(tags$i(class = "bi bi-book me-1"), "Definition"),
+        value = "def",
+        div(class = "p-4", def_panel_ui(id))
+      )
+    )
+  )
+}
+
+# Register downloadHandlers for all indicator definition PDFs
+def_download_server <- function(input, output, session, ids) {
+  def_dir <- normalizePath("definitions")
+  template <- file.path(def_dir, "pdf_template.Rmd")
+  lapply(ids, function(id) {
+    local({
+      .id <- id
+      output[[paste0("dl_def_", .id)]] <- downloadHandler(
+        filename = function() {
+          meta <- .def_cache(.id)
+          nm   <- if (!is.null(meta$indicator_name))
+            gsub("[^a-zA-Z0-9_-]", "_", meta$indicator_name)
+          else .id
+          paste0(nm, "_definition.pdf")
+        },
+        content = function(file) {
+          rmarkdown::render(
+            template,
+            params            = list(id = .id, def_dir = def_dir),
+            output_file       = file,
+            intermediates_dir = tempdir(),
+            quiet             = TRUE
+          )
+        }
+      )
+    })
+  })
 }
 
 # CSS for the definition panel (injected via tags$style(HTML(def_panel_css)) in app.R)
@@ -222,5 +272,17 @@ def_panel_css <- "
   }
   .ind-def-value table tr:nth-child(even) td {
     background: oklch(0.975 0.003 260);
+  }
+
+  /* ── PDF download button ─────────────────────────────────────────────── */
+  .ind-def-dl-btn {
+    font-size: .75rem !important; font-weight: 600 !important;
+    padding: .28rem .75rem !important; border-radius: .45rem !important;
+    flex-shrink: 0;
+  }
+  .ind-def-dl-btn:hover {
+    background: var(--primary) !important;
+    color: white !important;
+    border-color: var(--primary) !important;
   }
 "

@@ -26,7 +26,9 @@ INDICATORS <- list(
   list(id = "cnc", label = "Cancer Registry",
        icon = "bi-heart-pulse-fill",   category = "Health Services"),
   list(id = "dlv", label = "Deliveries financed",
-       icon = "bi-hospital",           category = "Health Services")
+       icon = "bi-hospital",           category = "Health Services"),
+  list(id = "cur", label = "Claims Under Review",
+       icon = "bi-hourglass",          category = "Claim Flow")
 )
 
 # ==============================================================================
@@ -573,7 +575,8 @@ ui <- page_sidebar(
     tabPanel("tat", indicator_tabs_ui("tat", tat_panel_ui())),
     tabPanel("age", indicator_tabs_ui("age", ageing_panel_ui())),
     tabPanel("cnc", indicator_tabs_ui("cnc", cancer_panel_ui())),
-    tabPanel("dlv", indicator_tabs_ui("dlv", deliveries_panel_ui()))
+    tabPanel("dlv", indicator_tabs_ui("dlv", deliveries_panel_ui())),
+    tabPanel("cur", indicator_def_only_ui("cur"))
   )
 )
 
@@ -608,6 +611,7 @@ server <- function(input, output, session) {
   ageing_server(input, output, session)
   cancer_server(input, output, session)
   deliveries_server(input, output, session)
+  def_download_server(input, output, session, sapply(INDICATORS, `[[`, "id"))
 }
 
 shinyApp(ui = ui, server = server)
