@@ -57,6 +57,21 @@ requirements/          # Indicator specs
 renv.lock              # Pinned package versions
 ```
 
+## Deploying to Posit Connect
+
+**Always regenerate `manifest.json` before deploying**, especially after adding or removing packages:
+
+```r
+rsconnect::writeManifest()
+```
+
+`manifest.json` is what Posit Connect reads to determine which R packages to install on the server. It is **not** automatically kept in sync with `renv.lock` — if a package is in `renv.lock` but missing from `manifest.json`, it will not be installed and the app will fail at runtime with `there is no package called '...'`.
+
+Run `rsconnect::writeManifest()` any time you:
+- Add or remove a package
+- Change how a package is called (e.g. switching from `library(pkg)` to `pkg::fn()`)
+- See an unexpected "no package called" error in Connect logs
+
 ## Data
 
 All data is randomly generated seed-based mock data. No real patient or claims data is used.
