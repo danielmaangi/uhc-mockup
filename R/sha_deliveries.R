@@ -1,5 +1,5 @@
 # ==============================================================================
-# Indicator: Deliveries Funded by SHA
+# Indicator: Deliveries Funded by SHA vs Total deliveries
 # Spec: requirements/sha_deliveries_dashboard.md
 # ==============================================================================
 
