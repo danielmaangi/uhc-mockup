@@ -12,8 +12,8 @@ numerator: |
   Count and total value of **live claims** per ageing bucket, where a live claim is one
   that:
 
-  1. Does **not** have a terminal status (`REJECTED`, `DECLINE`, `CANCELED`, `SENT_BACK`,
-     `MISSING_DOCUMENTS`, `PAYMENT_PARTIAL`), **and**
+  1. Is **not** in a status outside SHA's processing scope (`REJECTED`, `SENT_BACK`,
+     `MISSING_DOCUMENTS`), **and**
   2. Is **not** confirmed as paid in the ERP (ERP status ≠ `PAID`).
 denominator: "Not applicable"
 unit_of_measure: |
@@ -35,15 +35,13 @@ sdg_who_ref: |
   **SDG 3.8** — Universal Health Coverage; reducing claims ageing protects providers'
   financial sustainability and maintains care access.
 notes_caveats: |
-  **Excluded statuses and rationale:**
+  **Excluded statuses — claims outside SHA's current processing scope:**
 
-  | Status | Reason |
+  | Status | Reason Excluded |
   |---|---|
-  | `REJECTED` / `DECLINE` | Terminal — claim denied |
-  | `CANCELED` | Terminal — claim withdrawn |
-  | `SENT_BACK` | With provider — awaiting provider action |
-  | `MISSING_DOCUMENTS` | With provider — awaiting documents |
-  | `PAYMENT_PARTIAL` | Excluded pending resolution of partial payment model |
+  | `REJECTED` | Denied by SHA — no further SHA action required |
+  | `SENT_BACK` | Returned to provider — SHA awaiting provider response (can re-enter processing) |
+  | `MISSING_DOCUMENTS` | Awaiting documents from provider — SHA awaiting provider response (can re-enter processing) |
 
   - The ERP is queried by **claim ID** to determine payment status. ERP confirmation
     overrides the claims system status where they differ.

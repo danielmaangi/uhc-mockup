@@ -556,3 +556,30 @@ tat_server <- function(input, output, session) {
     tat_page(1L)
   })
 }
+
+# ---- Data Model samples -------------------------------------------------------
+
+tat_raw_sample <- data.frame(
+  claim_id       = c("CLM-05101","CLM-05102","CLM-05103","CLM-05104","CLM-05105"),
+  fid_code       = c("FID-47-224801-3","FID-42-156723-9","FID-01-087245-2",
+                     "FID-32-203481-5","FID-27-174392-7"),
+  county         = c("Nairobi","Kisumu","Mombasa","Nakuru","Uasin Gishu"),
+  fund           = c("SHIF","SHIF","ECCIF","POMSF","SHIF"),
+  date_created   = c("2025-09-01","2025-09-03","2025-09-02","2025-09-05","2025-09-04"),
+  date_paid      = c("2025-09-28","2025-10-12","2025-10-01","2025-11-15","2025-10-08"),
+  claim_amount   = c(134000,89500,210000,67800,305000),
+  tat_days       = c(27L,39L,29L,71L,34L),
+  stringsAsFactors = FALSE
+)
+
+tat_modelled_sample <- data.frame(
+  county         = c("Nairobi","Kisumu","Mombasa","Nakuru","Uasin Gishu"),
+  n_claims       = c(4820L,2130L,3405L,1876L,2644L),
+  min_tat        = c(3L,5L,4L,6L,4L),
+  median_tat     = c(28L,41L,35L,58L,32L),
+  max_tat        = c(142L,198L,165L,287L,178L),
+  pct_within_30  = c(58.4,41.2,49.7,28.1,53.6),
+  pct_within_90  = c(88.2,74.6,81.3,65.4,84.1),
+  val_claims_KES = c(64500000,28400000,45300000,25100000,35200000),
+  stringsAsFactors = FALSE
+)

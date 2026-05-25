@@ -442,3 +442,30 @@ deliveries_server <- function(input, output, session) {
     dlv_page(1L)
   })
 }
+
+# ---- Data Model samples -------------------------------------------------------
+
+dlv_raw_sample <- data.frame(
+  delivery_id      = c("DLV-30101","DLV-30102","DLV-30103","DLV-30104","DLV-30105"),
+  fid_code         = c("FID-47-224801-3","FID-01-087245-2","FID-42-156723-9",
+                       "FID-32-203481-5","FID-27-174392-7"),
+  facility_name    = c("Pumwani Maternity Hospital","Coast General Hospital",
+                       "Kisumu County Referral Hospital","Nakuru Level 5 Hospital",
+                       "Moi Teaching & Referral Hospital"),
+  county           = c("Nairobi","Mombasa","Kisumu","Nakuru","Uasin Gishu"),
+  delivery_date    = c("2025-11-02","2025-11-02","2025-11-03","2025-11-03","2025-11-04"),
+  khis_recorded    = c(TRUE,TRUE,TRUE,TRUE,TRUE),
+  sha_claimed      = c(TRUE,FALSE,TRUE,TRUE,FALSE),
+  sha_claim_id     = c("CLM-90201",NA,"CLM-90203","CLM-90204",NA),
+  claim_amount_KES = c(12500,NA,12500,12500,NA),
+  fund             = c("SHIF",NA,"SHIF","POMSF",NA),
+  stringsAsFactors = FALSE
+)
+
+dlv_modelled_sample <- data.frame(
+  county          = c("Nairobi","Mombasa","Kisumu","Nakuru","Uasin Gishu"),
+  khis_deliveries = c(32410L,14820L,12950L,9870L,8640L),
+  sha_claimed     = c(18940L,7260L,8080L,7110L,4060L),
+  pct_sha_funded  = c(58.4,49.0,62.4,72.0,47.0),
+  stringsAsFactors = FALSE
+)

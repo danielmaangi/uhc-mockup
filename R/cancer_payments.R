@@ -776,3 +776,33 @@ cancer_server <- function(input, output, session) {
     cnc_page(1L)
   })
 }
+
+# ---- Data Model samples -------------------------------------------------------
+
+cancer_raw_sample <- data.frame(
+  cr_number        = c("CR-10041","CR-10042","CR-10043","CR-10044","CR-10045"),
+  encounter_id     = c("ENC-88201","ENC-88202","ENC-88203","ENC-88204","ENC-88205"),
+  fid_code         = c("FID-47-224801-3","FID-47-118934-6","FID-01-087245-2",
+                       "FID-42-156723-9","FID-32-203481-5"),
+  county           = c("Nairobi","Nairobi","Mombasa","Kisumu","Nakuru"),
+  icd_code         = c("2B5A","2B4Y","2C0Y","2B5A","2B33"),
+  cancer_type      = c("Breast Carcinoma","Cervical Carcinoma","Prostate Carcinoma",
+                       "Breast Carcinoma","Colorectal Carcinoma"),
+  visit_date       = c("2025-11-03","2025-11-04","2025-11-05","2025-11-05","2025-11-06"),
+  submitted_amount = c(184000,132000,265000,184000,98000),
+  amount_paid      = c(178000,128000,258000,178000,95000),
+  patient_sex      = c("Female","Female","Male","Female","Male"),
+  age_group        = c("45-54","35-44","65+","55-64","55-64"),
+  stringsAsFactors = FALSE
+)
+
+cancer_modelled_sample <- data.frame(
+  county              = c("Nairobi","Mombasa","Kisumu","Nakuru","Uasin Gishu"),
+  cumulative_patients = c(2841L,1204L,987L,743L,618L),
+  current_patients    = c(614L,267L,218L,164L,137L),
+  new_patients        = c(98L,41L,33L,25L,21L),
+  amount_paid_KES     = c(7420000,3140000,2570000,1930000,1610000),
+  submitted_value_KES = c(8670000,3670000,3000000,2250000,1880000),
+  submitted_count     = c(648L,281L,230L,173L,144L),
+  stringsAsFactors = FALSE
+)

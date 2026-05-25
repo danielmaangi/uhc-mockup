@@ -494,3 +494,32 @@ apx_server <- function(input, output, session) {
     updateSelectInput(session, "apx_facility",       selected = "")
   })
 }
+
+# ---- Data Model samples -------------------------------------------------------
+
+apx_raw_sample <- data.frame(
+  claim_id        = c("CLM-00841","CLM-00842","CLM-00843","CLM-00844","CLM-00845"),
+  fid_code        = c("FID-47-224801-3","FID-47-118934-6","FID-01-087245-2",
+                      "FID-42-156723-9","FID-32-203481-5"),
+  facility_name   = c("Kenyatta National Hospital","Nairobi Hospital",
+                      "Coast General Hospital","Jaramogi Oginga Odinga Hospital",
+                      "Nakuru Level 5 Hospital"),
+  county          = c("Nairobi","Nairobi","Mombasa","Kisumu","Nakuru"),
+  fund            = c("SHIF","ECCIF","SHIF","POMSF","PHC"),
+  date_submitted  = c("2025-11-01","2025-11-02","2025-11-02","2025-11-03","2025-11-04"),
+  claim_amount    = c(142500,89300,210000,67800,305000),
+  approved_amount = c(138000,89300,NA,65000,298000),
+  claim_status    = c("Paid","Paid","Pending","Paid","Paid"),
+  stringsAsFactors = FALSE
+)
+
+apx_modelled_sample <- data.frame(
+  county          = c("Nairobi","Nairobi","Mombasa","Kisumu","Nakuru"),
+  fund            = c("SHIF","ECCIF","SHIF","POMSF","PHC"),
+  total_claims    = c(1842L,623L,941L,518L,774L),
+  unpaid_claims   = c(214L,88L,179L,62L,95L),
+  total_value_KES = c(187432000,63920000,96845000,52180000,79340000),
+  unpaid_value_KES= c(21840000,9120000,18410000,6180000,9720000),
+  pct_unpaid      = c(11.6,13.8,18.9,11.7,12.2),
+  stringsAsFactors = FALSE
+)

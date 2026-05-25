@@ -386,9 +386,9 @@ ageing_panel_ui <- function() {
       last_updated = "13 May 2026",
       source       = "Payer System + ERP",
       info         = paste0(
-        "Live claims that have not been terminated or confirmed as paid. ",
+        "Live claims that SHA has visibility of and can process, not yet confirmed as paid. ",
         "Ageing is calculated from claim created date to today. ",
-        "Excludes rejected, declined, cancelled, sent-back, missing-document, ",
+        "Excludes rejected, sent-back, missing-document, ",
         "and ERP-confirmed-paid claims."
       ),
       badges = tagList(
@@ -516,3 +516,43 @@ ageing_server <- function(input, output, session) {
     ageing_page(1L)
   })
 }
+
+# ---- Data Model samples -------------------------------------------------------
+
+local({
+  .offsets     <- c(14L, 45L, 5L, 76L, 130L)
+  .inc_offsets <- c(21L, 57L, 8L, 96L, 175L)
+  .sub_dates   <- Sys.Date() - .offsets
+  .inc_dates   <- Sys.Date() - .inc_offsets
+  .bucket      <- function(d) ifelse(d <= 30, "0-30 days",
+                              ifelse(d <= 60, "31-60 days",
+                              ifelse(d <= 90, "61-90 days", "90+ days")))
+  ageing_raw_sample <<- data.frame(
+    claim_id       = c("CLM-07301","CLM-07302","CLM-07303","CLM-07304","CLM-07305"),
+    fid_code       = c("FID-47-224801-3","FID-01-087245-2","FID-42-156723-9",
+                       "FID-32-203481-5","FID-27-174392-7"),
+    county         = c("Nairobi","Mombasa","Kisumu","Nakuru","Uasin Gishu"),
+    fund           = c("SHIF","ECCIF","SHIF","PHC","POMSF"),
+    date_incurred  = format(.inc_dates,  "%Y-%m-%d"),
+    date_submitted = format(.sub_dates,  "%Y-%m-%d"),
+    claim_amount   = c(98400,145000,73200,210000,88500),
+    days_pending   = .offsets,
+    age_bucket     = .bucket(.offsets),
+    stringsAsFactors = FALSE
+  )
+})
+
+ageing_modelled_sample <- data.frame(
+  county           = c("Nairobi","Mombasa","Kisumu","Nakuru","Uasin Gishu"),
+  month_incurred   = c("2026-04","2026-03","2026-05","2026-02","2025-12"),
+  month_submitted  = c("2026-05","2026-04","2026-05","2026-03","2026-01"),
+  claims_0_30   = c(912L,484L,321L,278L,394L),
+  claims_31_60  = c(374L,198L,142L,121L,167L),
+  claims_61_90  = c(138L,81L,55L,49L,64L),
+  claims_90plus = c(62L,37L,24L,22L,31L),
+  value_0_30    = c(45120000,23940000,15870000,13740000,19490000),
+  value_31_60   = c(18490000,9790000,7020000,5980000,8260000),
+  value_61_90   = c(6820000,4010000,2720000,2420000,3170000),
+  value_90plus  = c(3060000,1830000,1190000,1090000,1530000),
+  stringsAsFactors = FALSE
+)

@@ -86,8 +86,51 @@ def_panel_ui <- function(id) {
   )
 }
 
-# Wrap a mockup UI in a Definition | Mockup tab pair
-indicator_tabs_ui <- function(id, mockup_ui) {
+# Render a two-section data model panel (raw joined data + modelled output)
+data_model_panel_ui <- function(raw_df, modelled_df,
+                                raw_grain = NULL, modelled_grain = NULL) {
+  .dm_table <- function(df) {
+    if (is.null(df) || nrow(df) == 0) return(div(class = "text-muted small", "No sample data provided."))
+    cols  <- names(df)
+    thead <- tags$thead(class = "table-light",
+      tags$tr(lapply(cols, function(cn) tags$th(cn)))
+    )
+    rows  <- lapply(seq_len(nrow(df)), function(i)
+      tags$tr(lapply(cols, function(cn) {
+        val <- df[[cn]][[i]]
+        tags$td(if (is.na(val)) tags$span(class = "text-muted", "NA") else as.character(val))
+      }))
+    )
+    tbody <- tags$tbody(rows)
+    div(class = "table-responsive",
+      tags$table(class = "table table-hover table-striped align-middle mb-0", thead, tbody)
+    )
+  }
+
+  .dm_section <- function(icon_cls, label, grain, df) {
+    n_rows <- if (!is.null(df)) nrow(df) else 0
+    n_cols <- if (!is.null(df)) ncol(df) else 0
+    div(
+      div(class = "dm-section-header",
+        tags$i(class = paste("bi", icon_cls)),
+        span(label),
+        span(class = "dm-badge", sprintf("%d rows × %d cols", n_rows, n_cols))
+      ),
+      if (!is.null(grain)) div(class = "dm-grain", grain),
+      .dm_table(df)
+    )
+  }
+
+  div(class = "dm-panel",
+    .dm_section("bi-layers", "Raw Data — after source joins",  raw_grain,      raw_df),
+    .dm_section("bi-table",  "Modelled Data — feeds visuals",  modelled_grain, modelled_df)
+  )
+}
+
+# Wrap a mockup UI in Mockup | Data Model | Definition tabs
+indicator_tabs_ui <- function(id, mockup_ui,
+                               raw_df = NULL, modelled_df = NULL,
+                               raw_grain = NULL, modelled_grain = NULL) {
   div(class = "ind-view-tabs",
     navset_tab(
       id = paste0("ind_view_", id),
@@ -95,6 +138,12 @@ indicator_tabs_ui <- function(id, mockup_ui) {
         title = tagList(tags$i(class = "bi bi-bar-chart-line me-1"), "Mockup"),
         value = "mockup",
         mockup_ui
+      ),
+      nav_panel(
+        title = tagList(tags$i(class = "bi bi-diagram-3 me-1"), "Data Model"),
+        value = "data_model",
+        div(class = "p-4",
+          data_model_panel_ui(raw_df, modelled_df, raw_grain, modelled_grain))
       ),
       nav_panel(
         title = tagList(tags$i(class = "bi bi-book me-1"), "Definition"),
@@ -276,6 +325,28 @@ def_panel_css <- "
   }
   .ind-def-value table tr:nth-child(even) td {
     background: oklch(0.975 0.003 260);
+  }
+
+  /* ── Data model panel ───────────────────────────────────────────────── */
+  .dm-panel { width: 100%; }
+  .dm-section-header {
+    display: flex; align-items: center; gap: .5rem;
+    font-size: .72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--muted-foreground); margin-bottom: .35rem;
+  }
+  .dm-grain {
+    font-size: .8rem; font-style: italic;
+    color: var(--muted-foreground); margin-bottom: .6rem;
+  }
+  .dm-section-header + .dm-grain + .table-responsive,
+  .dm-section-header + .table-responsive {
+    margin-bottom: 1.75rem;
+  }
+  .dm-badge {
+    font-size: .65rem; font-weight: 600;
+    background: var(--muted); color: var(--muted-foreground);
+    border-radius: .3rem; padding: .1rem .4rem;
+    margin-left: .25rem;
   }
 
   /* ── PDF download button ─────────────────────────────────────────────── */
