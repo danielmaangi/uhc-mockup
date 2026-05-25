@@ -120,7 +120,7 @@ render_indicator_table <- function(id) {
 \hline
 \rowcolor[HTML]{1A4480} \textcolor{white}{\textbf{Abbreviation}} & \textcolor{white}{\textbf{Meaning}} \\
 \hline
-CR    & Claim Reference Number \\[2pt]\hline
+CR    & Client Registry Number \\[2pt]\hline
 DHA   & Digital Health Agency \\[2pt]\hline
 ECCIF & Emergency, Chronic and Critical Illness Fund \\[2pt]\hline
 ERP   & Enterprise Resource Planning \\[2pt]\hline
