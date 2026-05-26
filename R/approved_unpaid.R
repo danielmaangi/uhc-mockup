@@ -193,7 +193,7 @@ apx_chart_js <- paste0(
 
 # ---- Component builders ------------------------------------------------------
 
-.apx_metric_card <- function(label, value, icon_cls, color, tooltip = NULL) {
+.apx_metric_card <- function(label, value, icon_cls, color, sub_value = NULL, tooltip = NULL) {
   div(class = "col",
     div(class = "card border-0 shadow-sm h-100",
       div(class = "card-body d-flex align-items-center gap-3 p-4",
@@ -207,7 +207,9 @@ apx_chart_js <- paste0(
         div(class = "flex-grow-1 min-width-0",
           div(class = "text-uppercase fw-semibold text-muted mb-1 text-truncate",
               style = "font-size:.7rem; letter-spacing:.07em;", label),
-          div(class = "fw-bold lh-sm", style = "font-size:1.5rem; color:#0f172a;", value)
+          div(class = "fw-bold lh-sm", style = "font-size:1.5rem; color:#0f172a;", value),
+          if (!is.null(sub_value))
+            div(class = "text-muted mt-1", style = "font-size:.85rem;", sub_value)
         )
       )
     )
@@ -215,16 +217,25 @@ apx_chart_js <- paste0(
 }
 
 .apx_metrics_row <- function(m) {
-  pct_val <- round(m$unpaid_value / m$total_value * 100, 1)
-  div(class = "row row-cols-1 row-cols-sm-3 g-3",
-    .apx_metric_card("Value of Claims in ERP", fmt_num(m$total_claims),
-                     "bi bi-file-earmark-medical-fill", "#0284c7"),
-    .apx_metric_card("Unpaid Claims",              fmt_currency(m$unpaid_value),
-                     "bi bi-exclamation-circle-fill",   "#dc2626",
-                     tooltip = paste0("Count: ", fmt_num(m$unpaid_claims), " claims")),
-    .apx_metric_card("% of Value Unpaid",          paste0(pct_val, "%"),
-                     "bi bi-percent",                   "#ea580c",
-                     tooltip = paste0("Count: ", fmt_num(m$unpaid_claims), " unpaid claims"))
+  pct_cnt <- round(m$unpaid_claims / m$total_claims * 100, 1)
+  paid_claims <- m$total_claims - m$unpaid_claims
+  paid_value  <- m$total_value  - m$unpaid_value
+  div(class = "row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-3",
+    .apx_metric_card("Ever Eligible For Payment",
+                     fmt_currency(m$total_value),
+                     "bi bi-file-earmark-medical-fill", "#0284c7",
+                     sub_value = paste0(fmt_num(m$total_claims), " claims")),
+    .apx_metric_card("Total Ever Paid",
+                     fmt_currency(paid_value),
+                     "bi bi-check-circle-fill", "#16a34a",
+                     sub_value = paste0(fmt_num(paid_claims), " claims")),
+    .apx_metric_card("Current Unpaid",
+                     fmt_currency(m$unpaid_value),
+                     "bi bi-exclamation-circle-fill", "#dc2626",
+                     sub_value = paste0(fmt_num(m$unpaid_claims), " claims")),
+    .apx_metric_card("% Unpaid Claims",
+                     paste0(pct_cnt, "%"),
+                     "bi bi-percent", "#ea580c")
   )
 }
 
@@ -271,13 +282,20 @@ apx_chart_js <- paste0(
 
   div(class = "card border-0 shadow-sm mt-4",
     div(class = "card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3 px-4",
-      div(class = "fw-semibold", style = "color:#0f172a;", "Claims by County"),
-      div(class = "input-group input-group-sm apx-search-wrap", style = "width:220px;",
-        tags$span(class = "input-group-text border-end-0",
-          tags$i(class = "bi bi-search", style = "font-size:.8rem; color:#94a3b8;")),
-        tags$input(type = "text", id = sid, `data-fund` = fund,
-          class = "form-control border-start-0 apx-search",
-          placeholder = "Search county...")
+      div(class = "fw-semibold", style = "color:#0f172a;", "Unpaid Claims by County"),
+      div(class = "d-flex gap-2 align-items-center",
+        div(class = "input-group input-group-sm apx-search-wrap", style = "width:220px;",
+          tags$span(class = "input-group-text border-end-0",
+            tags$i(class = "bi bi-search", style = "font-size:.8rem; color:#94a3b8;")),
+          tags$input(type = "text", id = sid, `data-fund` = fund,
+            class = "form-control border-start-0 apx-search",
+            placeholder = "Search county...")
+        ),
+        tags$button(type = "button",
+          class = "btn btn-sm btn-outline-secondary",
+          onclick = "showMockAction('Preparing unpaid claims CSV export — the file will download shortly.')",
+          tags$i(class = "bi bi-download me-1"), "Download"
+        )
       )
     ),
     div(class = "table-responsive",
