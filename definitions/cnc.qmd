@@ -36,6 +36,24 @@ sdg_who_ref: |
     (including cancer) by one-third by 2030.
   - **SDG 3.8** — Achieve universal health coverage, ensuring access to essential
     medicines and vaccines.
+filters: |
+  Claims are restricted to the following **SHA-06 Hemato-Oncology** intervention codes:
+
+  | Code       | Intervention Name                  |
+  |------------|------------------------------------|
+  | SHA-06-021 | Chemotherapy administration        |
+  | SHA-06-022 | Chemotherapy medicines             |
+  | SHA-06-023 | Brachytherapy                      |
+  | SHA-06-024 | SBRT/SBRS                          |
+  | SHA-06-025 | Radiotherapy                       |
+  | SHA-06-026 | Red cell exchange                  |
+  | SHA-06-027 | Apharetic platelet transfusion     |
+  | SHA-06-028 | Chemo port insertion               |
+  | SHA-06-029 | Full Blood Count                   |
+  | SHA-06-030 | Urea / Electrolytes / Creatinine   |
+  | SHA-06-031 | Liver Function Tests               |
+  | SHA-06-032 | Herceptin 600mg SC                 |
+
 notes_caveats: |
   - **Deduplication** is performed at the CR Number level — a patient registered at
     multiple facilities in the same period is counted once.
