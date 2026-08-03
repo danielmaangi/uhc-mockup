@@ -13,6 +13,7 @@ source("R/claims_tat.R")
 source("R/cancer_payments.R")
 source("R/claims_ageing.R")
 source("R/sha_deliveries.R")
+source("R/ambulance_claims.R")
 
 # ==============================================================================
 # NAVIGATION DEFINITION
@@ -29,6 +30,8 @@ INDICATORS <- list(
        icon = "bi-stopwatch",          category = "Claim Flow"),
   list(id = "age", label = "Claims Ageing Report",
        icon = "bi-hourglass-split",    category = "Claim Flow"),
+  list(id = "amb", label = "Ambulance Claims",
+       icon = "bi-truck-front-fill",   category = "Claim Flow"),
   list(id = "cnc", label = "Cancer Registry",
        icon = "bi-heart-pulse-fill",   category = "Health Services"),
   list(id = "dlv", label = "Deliveries financed",
@@ -478,6 +481,9 @@ app_js <- HTML("
     if (id === 'dlv' && typeof window.revealDeliveriesCharts === 'function') {
       setTimeout(window.revealDeliveriesCharts, 80);
     }
+    if (id === 'amb' && typeof window.revealAmbCharts === 'function') {
+      setTimeout(window.revealAmbCharts, 80);
+    }
   });
 
   /* ── Sidebar search filter ──────────────────────────────────────────── */
@@ -576,7 +582,7 @@ app_js <- HTML("
 # ==============================================================================
 
 ui <- page_sidebar(
-  title   = "UHC Indicator Reference Guide",
+  title   = "DLA Mockups",
   theme   = bs_theme(version = 5, primary = "#0e82b5"),   # ≈ oklch(0.55 0.16 232)
   sidebar = app_sidebar,
   fillable = FALSE,
@@ -593,6 +599,7 @@ ui <- page_sidebar(
     tags$script(HTML(cancer_chart_js)),  # from cancer_payments.R
     tags$script(HTML(ageing_chart_js)),      # from claims_ageing.R
     tags$script(HTML(deliveries_chart_js)), # from sha_deliveries.R
+    tags$script(HTML(amb_chart_js)),        # from ambulance_claims.R
     tags$script(app_js)
   ),
 
@@ -626,6 +633,11 @@ ui <- page_sidebar(
                modelled_df   = dlv_modelled_sample,
                raw_grain     = "One row = one delivery record (joined: KHIS facility deliveries × SHA maternity claims)",
                modelled_grain= "One row = one county, total KHIS deliveries vs SHA-claimed for the selected month")),
+    tabPanel("amb", indicator_tabs_ui("amb", amb_panel_ui(),
+               raw_df        = amb_raw_sample,
+               modelled_df   = amb_modelled_sample,
+               raw_grain     = "One row = one ambulance claim (joined: Payor System submission/status/vendor/patient/county x ERP payment confirmation)",
+               modelled_grain= "One row = one vendor, aggregated claim counts/values by status, rejection rates and average TAT")),
     tabPanel("cur", indicator_def_only_ui("cur"))
   )
 )
@@ -661,6 +673,7 @@ server <- function(input, output, session) {
   ageing_server(input, output, session)
   cancer_server(input, output, session)
   deliveries_server(input, output, session)
+  amb_server(input, output, session)
   def_download_server(input, output, session, sapply(INDICATORS, `[[`, "id"))
 
   output$dl_reference_guide <- downloadHandler(

@@ -1,0 +1,96 @@
+---
+indicator_code: "AMB-001"
+indicator_name: "Ambulance Claims"
+definition: |
+  Tracks claims for **ambulance/EMS transport** from submission through to
+  settlement. Every claim carries exactly one of **four pipeline statuses**:
+  `UNDER_REVIEW`, `RETURNED`, `REJECTED`, `PAID`. **Submitted is not a fifth,
+  independent status** — it is the total across all four, i.e. every claim
+  that has ever been filed. The dashboard exists to reconcile the claims book
+  (submitted vs paid vs rejected vs outstanding), surface the rejection rate
+  by both count and value, monitor turnaround time from submission to
+  adjudication, and show how long pending claims have been outstanding.
+
+  > **Total Submitted = Paid + Rejected + Outstanding**
+  > **Outstanding = Under Review + Returned**
+  > **Total Submitted = Under Review + Returned + Rejected + Paid**
+
+  This identity holds at every level of aggregation shown on the dashboard —
+  the overall figure, and each vendor/county row.
+numerator: |
+  For the reconciliation identity: count and value of claims in each of the
+  three legs (Paid / Rejected / Outstanding).
+
+  For rejection rate: count and value of claims with status `REJECTED`.
+
+  For TAT: `Adjudication Date − Submission Date`, for every claim that has
+  reached a **terminal** decision (status `REJECTED` or `PAID`).
+denominator: |
+  - Reconciliation legs: **Total Submitted** (all claims regardless of status)
+  - Rejection rate: **Total Submitted** (count and value)
+  - TAT: claims with a terminal status (`REJECTED` or `PAID`) — excludes
+    `UNDER_REVIEW` and `RETURNED`, neither of which has an adjudication date yet
+unit_of_measure: |
+  - **Count** — number of claims
+  - **KES** — claim value
+  - **Days** — TAT and ageing buckets (whole days, floor not rounded)
+  - **%** — rejection rate (by count and by value) and aging bucket share
+data_source: |
+  - **Payor System** — claim submission, status, vendor, patient, county
+  - **ERP** — payment confirmation (source of truth for `PAID` status)
+frequency: "Real-time; values refresh on each page load."
+disaggregation: |
+  - Vendor (ambulance/EMS provider)
+  - County
+  - Claim Status (Submitted / Under Review / Returned / Rejected / Paid) —
+    surfaced as a toggle on the Monthly Trend chart, not a global filter
+  - Date Created
+  - Date Incurred
+filters: |
+  - Created Date (month)
+  - Incurred Date (month)
+  - County (multi-select)
+  - Vendor (multi-select)
+acceptance_criteria: |
+  - Total Submitted must always equal Paid + Rejected + Outstanding, for the
+    overall figure and for every vendor/county rollup.
+  - Both the Count and Amount card rows show all five labels (Submitted,
+    Under Review, Returned, Rejected, Paid) — Submitted's value is always the
+    sum of the other four, by construction.
+  - Rejection rate is shown as **both** % of claim count and % of claim
+    value — these are expected to diverge (a small number of high-value
+    claims can move % of value independently of % of count).
+  - TAT shows **both average and median**; median is the primary operational
+    benchmark since a small number of stuck claims can inflate the average.
+  - Ageing of pending (outstanding) claims can be toggled between **Created
+    Date** and **Incurred Date** — this is a real recomputation of which
+    bucket each claim falls into, not just a filter, since incurred date
+    always precedes (or equals) created date and can materially change how
+    old a claim looks.
+  - The Monthly Trend chart carries a status toggle (Submitted / Under Review
+    / Returned / Rejected / Paid) independent of the Created/Incurred date
+    toggle — the two combine, so any of the five statuses can be viewed
+    against either date field.
+notes_caveats: |
+  - **Submitted is a derived total, not a claim-level status.** No claim
+    record ever has `status = SUBMITTED`; every filed claim is already at
+    minimum `UNDER_REVIEW`. Submitted exists only as a KPI card / reporting
+    concept equal to the sum of the four real statuses.
+  - **Outstanding** = `UNDER_REVIEW` + `RETURNED`. These are the two "live"
+    statuses still in SHA's processing pipeline — neither has reached a final
+    decision.
+  - `RETURNED` claims are sent back to the vendor pending further information
+    and can re-enter the pipeline — they are not terminal, hence their
+    inclusion in Outstanding rather than Rejected.
+  - Ageing buckets: **0–7 / 8–30 / 31–60 / 60+ days** — deliberately more
+    granular near-term than other claim-type ageing reports, since ambulance
+    dispatch turnaround is expected to be fast.
+  - Only claims with a terminal status (`REJECTED` or `PAID`) are included in
+    the TAT calculation; claims still in `UNDER_REVIEW` or `RETURNED` have not
+    yet reached a decision.
+  - County-level figures reflect the vendor's operating county, not
+    necessarily the patient's county of residence.
+sdg_who_ref: |
+  **SDG 3.8** — Universal Health Coverage; timely emergency transport
+  reimbursement is a prerequisite for sustained ambulance service delivery.
+---
