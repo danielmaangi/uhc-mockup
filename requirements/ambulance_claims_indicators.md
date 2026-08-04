@@ -79,12 +79,12 @@ Only **Outstanding** claims (Under Review + Returned) are aged. Paid and Rejecte
 
 | Bucket | Definition |
 |---|---|
-| **0–7 days** | Pending for a week or less — normal dispatch-to-decision window |
-| **8–30 days** | Approaching threshold; monitor |
-| **31–60 days** | Overdue; requires follow-up |
-| **60+ days** | Critically stalled; escalation required |
+| **0–30 days** | Normal processing window |
+| **31–60 days** | Approaching threshold; monitor closely |
+| **61–90 days** | Overdue; requires follow-up action |
+| **90+ days** | Critically stalled; escalation required |
 
-More granular near-term than other claim-type ageing reports (which use 0–30/31–60/61–90/90+), since ambulance turnaround is expected to be fast.
+Same bucket convention as the Claims Ageing Report indicator.
 
 ### Toggle — real recomputation, not a filter
 
@@ -153,10 +153,10 @@ Status is **not** a global filter — it's surfaced instead as the Monthly Trend
 | Returned | `#f97316` | Orange |
 | Rejected | `#dc2626` | Red |
 | Paid | `#16a34a` | Green |
-| Age bucket 0–7 days | `#22c55e` | Green |
-| Age bucket 8–30 days | `#f59e0b` | Amber |
-| Age bucket 31–60 days | `#f97316` | Orange |
-| Age bucket 60+ days | `#ef4444` | Red |
+| Age bucket 0–30 days | `#22c55e` | Green |
+| Age bucket 31–60 days | `#f59e0b` | Amber |
+| Age bucket 61–90 days | `#f97316` | Orange |
+| Age bucket 90+ days | `#ef4444` | Red |
 
 ### Data Model
 

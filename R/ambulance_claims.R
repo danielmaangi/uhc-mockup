@@ -14,15 +14,17 @@
 .AMB_COUNTIES <- c("Nairobi", "Mombasa", "Kisumu", "Nakuru", "Eldoret",
                     "Thika", "Kitale", "Garissa", "Meru", "Nyeri")
 
-# Display/card order. "submitted" is not an independent claim state - it is the
-# TOTAL of the four real pipeline statuses below (every claim that has been
-# filed is already at minimum "Under Review"). Kept first in this list purely
-# for card ordering.
-.AMB_STATUSES <- c("submitted", "under_review", "returned", "rejected", "paid")
+# Display/card order (Count/Amount cards, trend status toggle). "submitted" is
+# not an independent claim state - it is the TOTAL of the four real pipeline
+# statuses below (every claim that has been filed is already at minimum
+# "Under Review"). Kept first in this list purely for card ordering; Under
+# Review is kept last as the "earliest, least-resolved" status.
+.AMB_STATUSES <- c("submitted", "paid", "returned", "rejected", "under_review")
 
 # The four real, mutually-exclusive states a claim can carry. Used to generate
-# the mock data and to populate the Status filter (there is no claim record
-# with status = "submitted" to filter on, since it is a derived total).
+# the mock data - order here is independent of the display order above, and
+# "paid" must stay last so it absorbs the mock-data rounding remainder (see
+# .make_amb_combo / .amb_split_monthly).
 .AMB_PIPELINE_STATUSES <- c("under_review", "returned", "rejected", "paid")
 
 .AMB_STATUS_LABELS <- c(
@@ -44,7 +46,7 @@
 # Outstanding = still live in the pipeline (not yet resolved to paid/rejected)
 .AMB_OUTSTANDING_STATUSES <- c("under_review", "returned")
 
-.AMB_AGE_BUCKET_LABELS <- c("0-7 days", "8-30 days", "31-60 days", "60+ days")
+.AMB_AGE_BUCKET_LABELS <- c("0-30 days", "31-60 days", "61-90 days", "90+ days")
 .AMB_AGE_BUCKET_COLORS <- c("#22c55e", "#f59e0b", "#f97316", "#ef4444")
 
 .amb_months <- format(seq(as.Date("2025-05-01"), by = "month", length.out = 12), "%b '%y")

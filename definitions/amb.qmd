@@ -82,9 +82,8 @@ notes_caveats: |
   - `RETURNED` claims are sent back to the vendor pending further information
     and can re-enter the pipeline — they are not terminal, hence their
     inclusion in Outstanding rather than Rejected.
-  - Ageing buckets: **0–7 / 8–30 / 31–60 / 60+ days** — deliberately more
-    granular near-term than other claim-type ageing reports, since ambulance
-    dispatch turnaround is expected to be fast.
+  - Ageing buckets: **0–30 / 31–60 / 61–90 / 90+ days** — same convention as
+    the Claims Ageing Report indicator.
   - Only claims with status `PAID` are included in the TAT calculation.
     `REJECTED` claims are never paid and so never get a payment date;
     `UNDER_REVIEW` and `RETURNED` claims have not yet reached a decision.
