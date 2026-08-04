@@ -22,22 +22,27 @@ source("R/ambulance_claims.R")
 # ==============================================================================
 
 GUIDE_VERSION <- "1.0"
+DEFAULT_TAB   <- "amb"
 
 INDICATORS <- list(
-  list(id = "apx", label = "Unpaid Claims in ERP",
-       icon = "bi-file-earmark-check", category = "Claim Flow"),
-  list(id = "tat", label = "Claims TAT",
-       icon = "bi-stopwatch",          category = "Claim Flow"),
-  list(id = "age", label = "Claims Ageing Report",
-       icon = "bi-hourglass-split",    category = "Claim Flow"),
+  # No category = rendered as a flat top-level item, no collapsible group.
   list(id = "amb", label = "Ambulance Claims",
-       icon = "bi-truck-front-fill",   category = "Claim Flow"),
+       icon = "bi-truck-front-fill",   category = NA),
+
+  # Archived - these mockups have since been built for real, so they're kept
+  # for reference but no longer the active mockup work.
+  list(id = "apx", label = "Unpaid Claims in ERP",
+       icon = "bi-file-earmark-check", category = "Archive"),
+  list(id = "tat", label = "Claims TAT",
+       icon = "bi-stopwatch",          category = "Archive"),
+  list(id = "age", label = "Claims Ageing Report",
+       icon = "bi-hourglass-split",    category = "Archive"),
   list(id = "cnc", label = "Cancer Registry",
-       icon = "bi-heart-pulse-fill",   category = "Health Services"),
+       icon = "bi-heart-pulse-fill",   category = "Archive"),
   list(id = "dlv", label = "Deliveries financed",
-       icon = "bi-hospital",           category = "Health Services"),
+       icon = "bi-hospital",           category = "Archive"),
   list(id = "cur", label = "Claims Under Review",
-       icon = "bi-hourglass",          category = "Claim Flow")
+       icon = "bi-hourglass",          category = "Archive")
 )
 
 # ==============================================================================
@@ -58,10 +63,19 @@ INDICATORS <- list(
 }
 
 .build_sidebar_nav <- function(indicators) {
-  categories <- unique(sapply(indicators, `[[`, "category"))
+  # Indicators with no category render as flat top-level items - no
+  # collapsible group, no numeric prefix.
+  ungrouped <- Filter(function(x) is.na(x$category), indicators)
+  grouped   <- Filter(function(x) !is.na(x$category), indicators)
+
+  flat_items <- lapply(seq_along(ungrouped), function(i) {
+    .nav_item(ungrouped[[i]], i == 1)
+  })
+
+  categories <- unique(sapply(grouped, `[[`, "category"))
   groups <- lapply(seq_along(categories), function(ci) {
     cat    <- categories[[ci]]
-    items  <- Filter(function(x) x$category == cat, indicators)
+    items  <- Filter(function(x) x$category == cat, grouped)
     grp_id <- gsub("[^a-z0-9]", "-", tolower(cat))
     div(class = "sidebar-cat-group",
       div(class = "sidebar-category-label",
@@ -69,7 +83,7 @@ INDICATORS <- list(
         `data-bs-target` = paste0("#cat-", grp_id),
         `aria-expanded`  = "false",
         style = "cursor:pointer;",
-        tags$i(class = "bi bi-collection me-2"),
+        tags$i(class = paste("bi me-2", if (cat == "Archive") "bi-archive" else "bi-collection")),
         span(class = "flex-grow-1", paste0(ci, ". ", cat)),
         tags$i(class = "bi bi-chevron-down sidebar-chevron")
       ),
@@ -78,12 +92,12 @@ INDICATORS <- list(
         lapply(seq_along(items), function(i) {
           ind <- items[[i]]
           ind$label <- paste0(ci, ".", i, " ", ind$label)
-          .nav_item(ind, i == 1 && cat == categories[[1]])
+          .nav_item(ind, length(ungrouped) == 0 && ci == 1 && i == 1)
         })
       )
     )
   })
-  do.call(tagList, groups)
+  do.call(tagList, c(flat_items, groups))
 }
 
 app_sidebar <- sidebar(
@@ -607,7 +621,7 @@ ui <- page_sidebar(
   tabsetPanel(
     id       = "current_indicator",
     type     = "hidden",
-    selected = "apx",
+    selected = DEFAULT_TAB,
     tabPanel("apx", indicator_tabs_ui("apx", apx_panel_ui(),
                raw_df        = apx_raw_sample,
                modelled_df   = apx_modelled_sample,
@@ -650,14 +664,16 @@ server <- function(input, output, session) {
 
   .valid_tabs <- sapply(INDICATORS, `[[`, "id")
 
-  # On load: restore tab from ?tab= query parameter
+  # On load: restore tab from ?tab= query parameter, falling back to the
+  # default tab. Always fires setActiveNav so the landing tab's charts get
+  # revealed - without this, a plain page load (no ?tab= in the URL) never
+  # triggers chart initialization for whichever tab is selected by default.
   observe({
     query <- parseQueryString(session$clientData$url_search)
     tab   <- query[["tab"]]
-    if (!is.null(tab) && tab %in% .valid_tabs) {
-      updateTabsetPanel(session, "current_indicator", selected = tab)
-      session$sendCustomMessage("setActiveNav", tab)
-    }
+    if (is.null(tab) || !(tab %in% .valid_tabs)) tab <- DEFAULT_TAB
+    updateTabsetPanel(session, "current_indicator", selected = tab)
+    session$sendCustomMessage("setActiveNav", tab)
   })
 
   # On nav click: switch panel and push ?tab= to the URL
@@ -692,7 +708,9 @@ server <- function(input, output, session) {
         tmp_tmpl,
         execute_params = list(
           ids        = sapply(INDICATORS, `[[`, "id"),
-          categories = sapply(INDICATORS, `[[`, "category"),
+          # Ungrouped indicators (category NA) get their own section, titled
+          # with their own name, rather than a shared category heading.
+          categories = sapply(INDICATORS, function(x) if (is.na(x$category)) x$label else x$category),
           def_dir    = def_dir,
           version    = GUIDE_VERSION
         ),
