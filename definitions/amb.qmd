@@ -9,7 +9,7 @@ definition: |
   that has ever been filed. The dashboard exists to reconcile the claims book
   (submitted vs paid vs rejected vs outstanding), surface the rejection rate
   by both count and value, monitor turnaround time from submission to
-  adjudication, and show how long pending claims have been outstanding.
+  payment, and show how long pending claims have been outstanding.
 
   > **Total Submitted = Paid + Rejected + Outstanding**
   > **Outstanding = Under Review + Returned**
@@ -23,13 +23,12 @@ numerator: |
 
   For rejection rate: count and value of claims with status `REJECTED`.
 
-  For TAT: `Adjudication Date − Submission Date`, for every claim that has
-  reached a **terminal** decision (status `REJECTED` or `PAID`).
+  For TAT: `Payment Date − Submission Date`, for every claim with status `PAID`.
 denominator: |
   - Reconciliation legs: **Total Submitted** (all claims regardless of status)
   - Rejection rate: **Total Submitted** (count and value)
-  - TAT: claims with a terminal status (`REJECTED` or `PAID`) — excludes
-    `UNDER_REVIEW` and `RETURNED`, neither of which has an adjudication date yet
+  - TAT: claims with status `PAID` only — excludes `UNDER_REVIEW`, `RETURNED`
+    and `REJECTED`, none of which has a payment date
 unit_of_measure: |
   - **Count** — number of claims
   - **KES** — claim value
@@ -60,8 +59,9 @@ acceptance_criteria: |
   - Rejection rate is shown as **both** % of claim count and % of claim
     value — these are expected to diverge (a small number of high-value
     claims can move % of value independently of % of count).
-  - TAT shows **both average and median**; median is the primary operational
-    benchmark since a small number of stuck claims can inflate the average.
+  - TAT shows **average, median, minimum and maximum**; median is the primary
+    operational benchmark since a small number of stuck claims can inflate
+    the average.
   - Ageing of pending (outstanding) claims can be toggled between **Created
     Date** and **Incurred Date** — this is a real recomputation of which
     bucket each claim falls into, not just a filter, since incurred date
@@ -85,9 +85,9 @@ notes_caveats: |
   - Ageing buckets: **0–7 / 8–30 / 31–60 / 60+ days** — deliberately more
     granular near-term than other claim-type ageing reports, since ambulance
     dispatch turnaround is expected to be fast.
-  - Only claims with a terminal status (`REJECTED` or `PAID`) are included in
-    the TAT calculation; claims still in `UNDER_REVIEW` or `RETURNED` have not
-    yet reached a decision.
+  - Only claims with status `PAID` are included in the TAT calculation.
+    `REJECTED` claims are never paid and so never get a payment date;
+    `UNDER_REVIEW` and `RETURNED` claims have not yet reached a decision.
   - County-level figures reflect the vendor's operating county, not
     necessarily the patient's county of residence.
 sdg_who_ref: |

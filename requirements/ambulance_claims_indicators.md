@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Ambulance Claims dashboard gives operations and leadership a quick sanity check on the ambulance/EMS claims book: does the submitted amount reconcile to what's been paid, rejected, and still outstanding; how does the rejection rate look by count vs by value; how fast is adjudication really running once outliers are accounted for; and how old is the pending backlog.
+The Ambulance Claims dashboard gives operations and leadership a quick sanity check on the ambulance/EMS claims book: does the submitted amount reconcile to what's been paid, rejected, and still outstanding; how does the rejection rate look by count vs by value; how fast are paid claims actually settling once outliers are accounted for; and how old is the pending backlog.
 
 Every claim carries one of **four pipeline statuses**:
 
@@ -35,15 +35,6 @@ The same five labels again, this time showing the **claim value (KES)** for each
 
 Showing both Count and Amount for every status is what lets a reviewer see rejection-rate divergence directly: the Rejected card's share of the Count section vs its share of the Amount section are expected to differ — a small number of high-value claims (e.g. long-distance inter-facility transfers) can move % of value independently of % of count. The mock data intentionally biases rejected claims toward higher average value to demonstrate this.
 
-### Turnaround Time (Submission → Adjudication)
-
-| Card | Value | Note |
-|---|---|---|
-| Average TAT | Mean days, submission to adjudication | Sensitive to outliers |
-| Median TAT | Median days, submission to adjudication | Flagged as the preferred operational benchmark |
-
-Only claims with a **terminal** status (`REJECTED` or `PAID`) have an adjudication date and are included in the TAT population — `UNDER_REVIEW` and `RETURNED` claims have not yet reached a decision.
-
 **Definitions footnote** (rendered as an info banner directly under the filter bar): states the reconciliation identity and clarifies that it holds at every aggregation level shown on the page (overall, by vendor, by county) — not a claim that any arbitrary filtered view will tie out, since this is a static mockup and the filter bar does not currently recompute the figures. **Unique Patients** and **Unique Vendors** are surfaced here as prose, not as separate KPI cards, since they aren't part of the Count/Amount status breakdown.
 
 ---
@@ -63,7 +54,22 @@ Two independent local toggles above the chart, both client-side dataset swaps (n
 
 ---
 
-## AC3 — Aging of Pending Claims
+## AC3 — Turnaround Time (Submission → Payment)
+
+Positioned directly below the Monthly Trend chart.
+
+| Card | Value | Note |
+|---|---|---|
+| Average TAT | Mean days, submission to payment | Sensitive to outliers |
+| Median TAT | Median days, submission to payment | Flagged as the preferred operational benchmark |
+| Minimum TAT | Fastest submission-to-payment turnaround observed | — |
+| Maximum TAT | Slowest submission-to-payment turnaround observed | Flags the worst-case outlier |
+
+**Only claims with status `PAID` are included** — TAT is submission date to payment date, so a claim needs an actual payment date to have a TAT. `REJECTED` claims are never paid and so never get one; `UNDER_REVIEW` and `RETURNED` claims haven't reached a decision yet either way.
+
+---
+
+## AC4 — Aging of Pending Claims
 
 ### Scope
 
@@ -90,7 +96,7 @@ Two bar charts side by side: claim count by bucket, and claim value (KES) by buc
 
 ---
 
-## AC4 — Vendor / County Breakdown Table
+## AC5 — Vendor / County Breakdown Table
 
 ### Layout
 
@@ -105,7 +111,7 @@ One table, toggled between **By Vendor** and **By County** groupings via pill ta
 | Value (KES) | Total claim value in the group |
 | Rejection Rate (% Claims) | Rejected count ÷ total count |
 | Rejection Rate (% Value) | Rejected value ÷ total value |
-| Avg TAT | Average submission-to-adjudication days for the group |
+| Avg TAT | Average submission-to-payment days for paid claims in the group |
 
 ### Sorting
 
@@ -113,7 +119,7 @@ Every column is sortable by clicking the header (reuses the shared `.sortable-co
 
 ---
 
-## AC5 — Global Filters
+## AC6 — Global Filters
 
 | Filter | Input type | Field |
 |---|---|---|
@@ -154,7 +160,7 @@ Status is **not** a global filter — it's surfaced instead as the Monthly Trend
 
 ### Data Model
 
-- **Raw grain**: one row = one ambulance claim (joined: Payor System submission/status/vendor/patient/county × ERP payment confirmation).
+- **Raw grain**: one row = one ambulance claim (joined: Payor System submission/status/vendor/patient/county × ERP payment confirmation, including `date_paid` where the claim has been paid).
 - **Modelled grain**: one row = one vendor, aggregated claim counts/values by status, rejection rates, and average TAT for the selected period.
 
 > **Note:** All figures in this mockup are synthetic (`set.seed()`-based), constructed so the reconciliation identity holds exactly and the vendor/county rollups sum to the overall totals. Replace with a live query against the claims mart once available.

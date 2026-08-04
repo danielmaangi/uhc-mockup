@@ -146,16 +146,18 @@ amb_summary$rejection_rate_val <- round(amb_summary$rejected_value  / amb_summar
 set.seed(919)
 amb_summary$unique_patients <- round(amb_summary$total_claims * runif(1, 0.75, 0.90))
 
-# TAT: submission -> adjudication. Only claims with a terminal status (Rejected
-# or Paid) have an adjudication date; Submitted/Under Review/Returned claims
-# have not yet reached a decision and are excluded from the TAT sample. A long
-# right tail of stuck claims means the mean runs meaningfully above the median.
+# TAT: submission -> payment date. Only PAID claims have a payment date;
+# Submitted/Under Review/Returned/Rejected claims are excluded from the TAT
+# sample since they were never (or not yet) paid. A long right tail of stuck
+# claims means the mean runs meaningfully above the median.
 set.seed(555)
 .amb_tat_core    <- rpois(950, lambda = 6) + 1
 .amb_tat_outlier <- sample(30:150, 50, replace = TRUE)
 .amb_tat_sample  <- c(.amb_tat_core, .amb_tat_outlier)
 amb_summary$avg_tat    <- round(mean(.amb_tat_sample), 1)
 amb_summary$median_tat <- median(.amb_tat_sample)
+amb_summary$min_tat    <- min(.amb_tat_sample)
+amb_summary$max_tat    <- max(.amb_tat_sample)
 
 # ---- Aging of pending (outstanding) claims - toggle: created vs incurred ---
 # Same outstanding population, two different bucket assignments depending on
@@ -648,19 +650,6 @@ amb_panel_ui <- function() {
 
     tags$hr(class = "my-4 border-light"),
 
-    # Turnaround time
-    tags$h6(class = "ind-section-label",
-      "Turnaround Time — Submission to Adjudication"),
-    div(class = "row row-cols-1 row-cols-sm-2 g-3",
-      .amb_metric_card("Average TAT", paste0(s$avg_tat, " days"),
-                       "bi bi-stopwatch-fill", "#0ea5e9"),
-      .amb_metric_card("Median TAT", paste0(s$median_tat, " days"),
-                       "bi bi-bar-chart-line-fill", "#f59e0b",
-                       sub_value = "Preferred benchmark — less skewed by stuck outliers than the average")
-    ),
-
-    tags$hr(class = "my-4 border-light"),
-
     # Trend chart
     tags$h6(class = "ind-section-label", "Monthly Trend (last 12 months)"),
     .amb_chart_card(
@@ -671,6 +660,23 @@ amb_panel_ui <- function() {
         .amb_date_toggle("trend-date", "switchAmbTrendDate")
       ),
       height = "300px"
+    ),
+
+    tags$hr(class = "my-4 border-light"),
+
+    # Turnaround time
+    tags$h6(class = "ind-section-label",
+      "Turnaround Time — Submission to Payment"),
+    div(class = "row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-3",
+      .amb_metric_card("Average TAT", paste0(s$avg_tat, " days"),
+                       "bi bi-stopwatch-fill", "#0ea5e9"),
+      .amb_metric_card("Median TAT", paste0(s$median_tat, " days"),
+                       "bi bi-bar-chart-line-fill", "#f59e0b",
+                       sub_value = "Preferred benchmark — less skewed by stuck outliers than the average"),
+      .amb_metric_card("Minimum TAT", paste0(s$min_tat, " days"),
+                       "bi bi-lightning-charge-fill", "#22d3ee"),
+      .amb_metric_card("Maximum TAT", paste0(s$max_tat, " days"),
+                       "bi bi-exclamation-circle-fill", "#ef4444")
     ),
 
     tags$hr(class = "my-4 border-light"),
@@ -746,7 +752,7 @@ amb_raw_sample <- data.frame(
   date_created  = c("2026-06-03","2026-06-06","2026-06-04","2026-06-09","2026-06-06"),
   claim_amount  = c(24500,31200,18900,42300,27600),
   status        = c("paid","rejected","under_review","returned","paid"),
-  adjudicated_on= c("2026-06-11","2026-06-13","NA","NA","2026-06-15"),
+  date_paid     = c("2026-06-11","NA","NA","NA","2026-06-15"),
   stringsAsFactors = FALSE
 )
 
