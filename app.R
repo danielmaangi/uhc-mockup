@@ -596,7 +596,7 @@ app_js <- HTML("
 # ==============================================================================
 
 ui <- page_sidebar(
-  title   = "DLA Mockups",
+  title   = "Ambulance Claims",
   theme   = bs_theme(version = 5, primary = "#0e82b5"),   # ≈ oklch(0.55 0.16 232)
   sidebar = app_sidebar,
   fillable = FALSE,
