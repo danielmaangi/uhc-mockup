@@ -108,7 +108,7 @@ One horizontal bar chart, one bar per intervention (the SHA benefit-package line
 
 ### Intervention list
 
-Several named interventions can share one SHA code — e.g. Severe burns, Head injuries, Severe wounds and Multiple fractures all bill under `SHA-01-004`. The chart and the breakdown table (AC6) group by the more granular **intervention name**, not the SHA code, since that's the level a reviewer actually wants to compare (the code is carried alongside for reference only).
+Scoped to 15 clinical conditions — the transport line items (`SHA-01-001`/`002`) and antidote treatments (Anti-Rabies, Anti-Snake Venom) are excluded, since those don't read as a "reason for the ambulance" the way a clinical condition does. Several named interventions can share one SHA code — e.g. Severe burns, Head injuries, Severe wounds and Multiple fractures all bill under `SHA-01-004`. The chart and the breakdown table (AC6) group by the more granular **intervention name**, not the SHA code, since that's the level a reviewer actually wants to compare (the code is carried alongside for reference only). See the Appendix for the full list.
 
 ---
 
@@ -177,12 +177,10 @@ Status is **not** a global filter — it's surfaced instead as the Monthly Trend
 
 ### Intervention List (SHA Benefit Package)
 
-The dispatch-level intervention that triggered the claim. Several names can share one SHA code:
+The clinical *reason* for the dispatch — not every SHA-01 line item is included here. The transport line items (`SHA-01-001`/`002`, billed on every dispatch regardless of clinical reason) and antidote treatments (`SHA-01-011` Anti-Rabies, `SHA-01-012` Anti-Snake Venom — the treatment given, not the reason for the call) are excluded since they don't read as a "reason for the ambulance." Several remaining names can share one SHA code:
 
 | SHA Code | Intervention Name(s) |
 |---|---|
-| `SHA-01-001` | Ambulance services (Intra-metro, within 25km radius) |
-| `SHA-01-002` | Ambulance services (Extra-metro, beyond 25km) |
 | `SHA-01-003` | Cardiac/Respiratory Arrest |
 | `SHA-01-004` | Severe burns; Head injuries; Severe wounds; Multiple fractures |
 | `SHA-01-005` | Haemorrhagic; Septic; Dehydration |
@@ -190,8 +188,6 @@ The dispatch-level intervention that triggered the claim. Several names can shar
 | `SHA-01-007` | Severe respiratory distress |
 | `SHA-01-008` | Seizures/Status epilepticus |
 | `SHA-01-010` | Stroke |
-| `SHA-01-011` | Anti-Rabies |
-| `SHA-01-012` | Anti-Snake Venom |
 | `SHA-01-013` | Acute Coronary Syndrome; Pulmonary embolism |
 
 ### Data Model

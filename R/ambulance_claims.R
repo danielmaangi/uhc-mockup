@@ -166,15 +166,16 @@ amb_summary$max_tat    <- max(.amb_tat_sample)
 # injuries / Severe wounds / Multiple fractures all bill under SHA-01-004),
 # so the breakdown groups by the more granular intervention *name*, with the
 # SHA code carried alongside for reference - same code can repeat across rows.
+# Scoped to the clinical *reason* for dispatch only - the transport line items
+# (SHA-01-001/002, billed on every dispatch) and antidote treatments
+# (Anti-Rabies, Anti-Snake Venom - the treatment given, not the reason for
+# the call) are excluded as they don't read as a "reason for the ambulance".
 
 .AMB_INTERVENTIONS <- data.frame(
-  code = c("SHA-01-001", "SHA-01-002", "SHA-01-003", "SHA-01-004", "SHA-01-004",
-           "SHA-01-004", "SHA-01-004", "SHA-01-005", "SHA-01-005", "SHA-01-005",
-           "SHA-01-006", "SHA-01-006", "SHA-01-007", "SHA-01-008", "SHA-01-010",
-           "SHA-01-011", "SHA-01-012", "SHA-01-013", "SHA-01-013"),
+  code = c("SHA-01-003", "SHA-01-004", "SHA-01-004", "SHA-01-004", "SHA-01-004",
+           "SHA-01-005", "SHA-01-005", "SHA-01-005", "SHA-01-006", "SHA-01-006",
+           "SHA-01-007", "SHA-01-008", "SHA-01-010", "SHA-01-013", "SHA-01-013"),
   name = c(
-    "Ambulance services (Intra-metro, within 25km radius)",
-    "Ambulance services (Extra-metro, beyond 25km)",
     "Cardiac/Respiratory Arrest",
     "Severe burns", "Head injuries", "Severe wounds", "Multiple fractures",
     "Haemorrhagic", "Septic", "Dehydration",
@@ -182,14 +183,12 @@ amb_summary$max_tat    <- max(.amb_tat_sample)
     "Severe respiratory distress",
     "Seizures/Status epilepticus",
     "Stroke",
-    "Anti-Rabies",
-    "Anti-Snake Venom",
     "Acute Coronary Syndrome", "Pulmonary embolism"
   ),
-  # Relative claim-volume weight - transport codes (001/002) dominate since
-  # nearly every dispatch carries one; clinical indication codes are lower
-  # and vary with acuity/prevalence.
-  weight = c(30, 13, 7, 3, 6, 5, 6, 4, 3, 5, 6, 3, 5, 4, 5, 2, 1, 2, 1),
+  # Relative claim-volume weight - clinical indication codes vary with
+  # acuity/prevalence (e.g. head injuries and unconsciousness are far more
+  # common dispatch reasons than pulmonary embolism).
+  weight = c(7, 3, 6, 5, 6, 4, 3, 5, 6, 3, 5, 4, 5, 2, 1),
   stringsAsFactors = FALSE
 )
 
@@ -849,7 +848,7 @@ amb_panel_ui <- function() {
       "Volume / Value by Intervention", "SHA benefit-package line item that triggered the dispatch",
       "ambInterventionChart",
       toggle = .amb_metric_toggle("intervention-metric", "switchAmbInterventionMetric"),
-      height = "460px"
+      height = "380px"
     ),
 
     tags$hr(class = "my-4 border-light"),
