@@ -96,17 +96,34 @@ Two bar charts side by side: claim count by bucket, and claim value (KES) by buc
 
 ---
 
-## AC5 — Vendor / County Breakdown Table
+## AC5 — Claims by Intervention
 
 ### Layout
 
-One table, toggled between **By Vendor** and **By County** groupings via pill tabs (same pattern as the fund-type pills on the Unpaid Claims page).
+One horizontal bar chart, one bar per intervention (the SHA benefit-package line item that triggered the ambulance dispatch), ranked by claim volume descending.
+
+### Toggle
+
+**Count / Amount** pill toggle swaps the bar values between claim count and claim value (KES); bar order is fixed (set by volume) so the ranking doesn't reshuffle when switching metrics.
+
+### Intervention list
+
+Several named interventions can share one SHA code — e.g. Severe burns, Head injuries, Severe wounds and Multiple fractures all bill under `SHA-01-004`. The chart and the breakdown table (AC6) group by the more granular **intervention name**, not the SHA code, since that's the level a reviewer actually wants to compare (the code is carried alongside for reference only).
+
+---
+
+## AC6 — Vendor / County / Intervention Breakdown Table
+
+### Layout
+
+One table, toggled between **By Vendor**, **By County**, and **By Intervention** groupings via pill tabs (same pattern as the fund-type pills on the Unpaid Claims page). The Intervention tab additionally shows the SHA code alongside the intervention name (same pattern as the ICD-11 code / cancer type columns on the Cancer Payments page).
 
 ### Columns
 
 | Column | Description |
 |---|---|
-| Vendor / County | Group name |
+| (SHA Code — Intervention tab only) | Benefit-package line code; several names can share one code |
+| Vendor / County / Intervention | Group name |
 | Volume | Total claim count in the group (= Submitted for that group) |
 | Value (KES) | Total claim value in the group |
 | Rejection Rate (% Claims) | Rejected count ÷ total count |
@@ -119,7 +136,7 @@ Every column is sortable by clicking the header (reuses the shared `.sortable-co
 
 ---
 
-## AC6 — Global Filters
+## AC7 — Global Filters
 
 | Filter | Input type | Field |
 |---|---|---|
@@ -128,7 +145,7 @@ Every column is sortable by clicking the header (reuses the shared `.sortable-co
 | County | Multi-select | `county` |
 | Vendor | Multi-select | `vendor` |
 
-Status is **not** a global filter — it's surfaced instead as the Monthly Trend chart's status toggle (AC2), since that's the one place on the page a status breakdown over time is actually useful.
+Status is **not** a global filter — it's surfaced instead as the Monthly Trend chart's status toggle (AC2), since that's the one place on the page a status breakdown over time is actually useful. Intervention is likewise not a global filter — it's surfaced as its own chart and breakdown tab (AC5, AC6) instead.
 
 ---
 
@@ -158,9 +175,28 @@ Status is **not** a global filter — it's surfaced instead as the Monthly Trend
 | Age bucket 61–90 days | `#f97316` | Orange |
 | Age bucket 90+ days | `#ef4444` | Red |
 
+### Intervention List (SHA Benefit Package)
+
+The dispatch-level intervention that triggered the claim. Several names can share one SHA code:
+
+| SHA Code | Intervention Name(s) |
+|---|---|
+| `SHA-01-001` | Ambulance services (Intra-metro, within 25km radius) |
+| `SHA-01-002` | Ambulance services (Extra-metro, beyond 25km) |
+| `SHA-01-003` | Cardiac/Respiratory Arrest |
+| `SHA-01-004` | Severe burns; Head injuries; Severe wounds; Multiple fractures |
+| `SHA-01-005` | Haemorrhagic; Septic; Dehydration |
+| `SHA-01-006` | Unconsciousness; Confusion |
+| `SHA-01-007` | Severe respiratory distress |
+| `SHA-01-008` | Seizures/Status epilepticus |
+| `SHA-01-010` | Stroke |
+| `SHA-01-011` | Anti-Rabies |
+| `SHA-01-012` | Anti-Snake Venom |
+| `SHA-01-013` | Acute Coronary Syndrome; Pulmonary embolism |
+
 ### Data Model
 
-- **Raw grain**: one row = one ambulance claim (joined: Payor System submission/status/vendor/patient/county × ERP payment confirmation, including `date_paid` where the claim has been paid).
-- **Modelled grain**: one row = one vendor, aggregated claim counts/values by status, rejection rates, and average TAT for the selected period.
+- **Raw grain**: one row = one ambulance claim (joined: Payor System submission/status/vendor/patient/county/intervention × ERP payment confirmation, including `date_paid` where the claim has been paid).
+- **Modelled grain**: one row = one vendor (or county, or intervention), aggregated claim counts/values by status, rejection rates, and average TAT for the selected period.
 
-> **Note:** All figures in this mockup are synthetic (`set.seed()`-based), constructed so the reconciliation identity holds exactly and the vendor/county rollups sum to the overall totals. Replace with a live query against the claims mart once available.
+> **Note:** All figures in this mockup are synthetic (`set.seed()`-based), constructed so the reconciliation identity holds exactly at every row. The vendor/county rollups sum exactly to the overall totals since they're built from the same underlying grid; the intervention rollup is generated independently (weighted by relative claim volume) and so ties out closely but not exactly — replace with a live query against the claims mart once available.

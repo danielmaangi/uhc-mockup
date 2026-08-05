@@ -161,6 +161,83 @@ amb_summary$median_tat <- median(.amb_tat_sample)
 amb_summary$min_tat    <- min(.amb_tat_sample)
 amb_summary$max_tat    <- max(.amb_tat_sample)
 
+# ---- Data: breakdown by intervention (SHA benefit-package line) -----------
+# Several named interventions share one SHA code (e.g. Severe burns / Head
+# injuries / Severe wounds / Multiple fractures all bill under SHA-01-004),
+# so the breakdown groups by the more granular intervention *name*, with the
+# SHA code carried alongside for reference - same code can repeat across rows.
+
+.AMB_INTERVENTIONS <- data.frame(
+  code = c("SHA-01-001", "SHA-01-002", "SHA-01-003", "SHA-01-004", "SHA-01-004",
+           "SHA-01-004", "SHA-01-004", "SHA-01-005", "SHA-01-005", "SHA-01-005",
+           "SHA-01-006", "SHA-01-006", "SHA-01-007", "SHA-01-008", "SHA-01-010",
+           "SHA-01-011", "SHA-01-012", "SHA-01-013", "SHA-01-013"),
+  name = c(
+    "Ambulance services (Intra-metro, within 25km radius)",
+    "Ambulance services (Extra-metro, beyond 25km)",
+    "Cardiac/Respiratory Arrest",
+    "Severe burns", "Head injuries", "Severe wounds", "Multiple fractures",
+    "Haemorrhagic", "Septic", "Dehydration",
+    "Unconsciousness", "Confusion",
+    "Severe respiratory distress",
+    "Seizures/Status epilepticus",
+    "Stroke",
+    "Anti-Rabies",
+    "Anti-Snake Venom",
+    "Acute Coronary Syndrome", "Pulmonary embolism"
+  ),
+  # Relative claim-volume weight - transport codes (001/002) dominate since
+  # nearly every dispatch carries one; clinical indication codes are lower
+  # and vary with acuity/prevalence.
+  weight = c(30, 13, 7, 3, 6, 5, 6, 4, 3, 5, 6, 3, 5, 4, 5, 2, 1, 2, 1),
+  stringsAsFactors = FALSE
+)
+
+# Same per-row status split as .make_amb_combo (jittered .amb_status_probs,
+# "paid" absorbs the rounding remainder) so each intervention row satisfies
+# the reconciliation identity on its own, independent of the vendor/county grid.
+.make_amb_intervention_row <- function(code, name, n, idx) {
+  set.seed(idx * 151 + n)
+  probs  <- pmax(0.01, .amb_status_probs + runif(4, -0.03, 0.03))
+  probs  <- probs / sum(probs)
+  counts <- as.integer(floor(n * probs))
+  counts[4] <- n - sum(counts[1:3])
+  names(counts) <- .AMB_PIPELINE_STATUSES
+
+  avg_val <- runif(1, 7000, 40000)
+  values  <- counts * avg_val * .amb_status_val_mult * runif(4, 0.85, 1.15)
+  names(values) <- .AMB_PIPELINE_STATUSES
+
+  data.frame(
+    code = code, intervention = name,
+    cnt_under_review = counts[["under_review"]], cnt_returned = counts[["returned"]],
+    cnt_rejected     = counts[["rejected"]],      cnt_paid     = counts[["paid"]],
+    val_under_review = values[["under_review"]], val_returned = values[["returned"]],
+    val_rejected     = values[["rejected"]],      val_paid     = values[["paid"]],
+    stringsAsFactors = FALSE
+  )
+}
+
+.amb_intervention_n <- pmax(15, round(.AMB_INTERVENTIONS$weight / sum(.AMB_INTERVENTIONS$weight) *
+                                       amb_summary$total_claims))
+
+amb_by_intervention <- do.call(rbind, lapply(seq_len(nrow(.AMB_INTERVENTIONS)), function(i) {
+  .make_amb_intervention_row(.AMB_INTERVENTIONS$code[i], .AMB_INTERVENTIONS$name[i],
+                              .amb_intervention_n[i], i)
+}))
+
+amb_by_intervention$total_claims       <- rowSums(amb_by_intervention[.amb_cnt_cols])
+amb_by_intervention$total_value        <- rowSums(amb_by_intervention[.amb_val_cols])
+amb_by_intervention$outstanding_claims <- amb_by_intervention$cnt_under_review + amb_by_intervention$cnt_returned
+amb_by_intervention$outstanding_value  <- amb_by_intervention$val_under_review + amb_by_intervention$val_returned
+amb_by_intervention$rejection_rate_cnt <- round(amb_by_intervention$cnt_rejected / amb_by_intervention$total_claims * 100, 1)
+amb_by_intervention$rejection_rate_val <- round(amb_by_intervention$val_rejected / amb_by_intervention$total_value  * 100, 1)
+
+set.seed(nrow(amb_by_intervention) * 53)
+amb_by_intervention$avg_tat <- sample(5:24, nrow(amb_by_intervention), replace = TRUE)
+
+amb_by_intervention <- amb_by_intervention[order(-amb_by_intervention$total_claims), ]
+
 # ---- Aging of pending (outstanding) claims - toggle: created vs incurred ---
 # Same outstanding population, two different bucket assignments depending on
 # which date drives the calculation. Incurred-date buckets skew older because
@@ -245,9 +322,13 @@ amb_chart_js <- paste0(
   "var ambAgeValCreated=",   jsonlite::toJSON(amb_aging$created$val), ";",
   "var ambAgeCntIncurred=",  jsonlite::toJSON(amb_aging$incurred$cnt), ";",
   "var ambAgeValIncurred=",  jsonlite::toJSON(amb_aging$incurred$val), ";",
+  "var ambInterventionLabels=", jsonlite::toJSON(amb_by_intervention$intervention), ";",
+  "var ambInterventionCnt=",    jsonlite::toJSON(amb_by_intervention$total_claims), ";",
+  "var ambInterventionVal=",    jsonlite::toJSON(round(amb_by_intervention$total_value)), ";",
   "
   var _ambChartsReady = false;
-  var _ambTrendChart = null, _ambAgeCountChart = null, _ambAgeValueChart = null;
+  var _ambTrendChart = null, _ambAgeCountChart = null, _ambAgeValueChart = null, _ambInterventionChart = null;
+  var _ambInterventionMetric = 'count';
   var _ambTrendDateMode = 'created', _ambTrendStatus = 'submitted';
 
   function _ambTrendSeries() {
@@ -354,7 +435,56 @@ amb_chart_js <- paste0(
       });
     }
 
+    var ctxIntervention = document.getElementById('ambInterventionChart');
+    if (ctxIntervention) {
+      _ambInterventionChart = new Chart(ctxIntervention, {
+        type: 'bar',
+        data: {
+          labels: ambInterventionLabels,
+          datasets: [{
+            label: 'Claims',
+            data: ambInterventionCnt,
+            backgroundColor: 'rgba(2,132,199,0.7)',
+            borderColor: '#0284c7',
+            borderWidth: 1, borderRadius: 4, borderSkipped: false,
+            maxBarThickness: 18
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: function(c) {
+              return _ambInterventionMetric === 'amount'
+                ? ' KES ' + (c.parsed.x / 1e6).toFixed(1) + 'M'
+                : ' ' + c.parsed.x.toLocaleString() + ' claims';
+            } } }
+          },
+          scales: {
+            x: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { color: '#64748b',
+                   callback: function(v) {
+                     return _ambInterventionMetric === 'amount' ? (v / 1e6).toFixed(0) + 'M' : v.toLocaleString();
+                   } } },
+            y: { grid: { display: false }, ticks: { color: '#64748b', autoSkip: false } }
+          }
+        }
+      });
+    }
+
     _ambChartsReady = true;
+  }
+
+  function switchAmbInterventionMetric(metric) {
+    _ambInterventionMetric = metric;
+    if (_ambInterventionChart) {
+      var ds = _ambInterventionChart.data.datasets[0];
+      ds.data = metric === 'amount' ? ambInterventionVal : ambInterventionCnt;
+      ds.backgroundColor = metric === 'amount' ? 'rgba(245,158,11,0.75)' : 'rgba(2,132,199,0.7)';
+      ds.borderColor     = metric === 'amount' ? '#f59e0b' : '#0284c7';
+      _ambInterventionChart.update();
+    }
+    _ambToggleActive('intervention-metric', metric);
   }
 
   /* Local toggles for the trend chart - date mode and status each swap the
@@ -402,6 +532,7 @@ amb_chart_js <- paste0(
   window.switchAmbTrendDate   = switchAmbTrendDate;
   window.switchAmbTrendStatus = switchAmbTrendStatus;
   window.switchAmbAging       = switchAmbAging;
+  window.switchAmbInterventionMetric = switchAmbInterventionMetric;
   window.revealAmbCharts      = initAmbCharts;
   "
 )
@@ -483,6 +614,21 @@ amb_chart_js <- paste0(
   )
 }
 
+.amb_metric_toggle <- function(group_id, js_fn, active = "count") {
+  tags$div(class = "btn-group btn-group-sm amb-date-toggle", `data-group` = group_id, role = "group",
+    tags$button(type = "button",
+      class = paste("btn", if (active == "count") "btn-primary" else "btn-outline-secondary"),
+      `data-mode` = "count",
+      onclick = sprintf("%s('count')", js_fn),
+      "Count"),
+    tags$button(type = "button",
+      class = paste("btn", if (active == "amount") "btn-primary" else "btn-outline-secondary"),
+      `data-mode` = "amount",
+      onclick = sprintf("%s('amount')", js_fn),
+      "Amount")
+  )
+}
+
 .amb_chart_card <- function(title, subtitle, canvas_id, toggle = NULL, height = "280px") {
   div(class = "card border-0 shadow-sm h-100",
     div(class = "card-header bg-white border-bottom px-4 py-3 d-flex justify-content-between align-items-start flex-wrap gap-2",
@@ -498,7 +644,7 @@ amb_chart_js <- paste0(
   )
 }
 
-.amb_group_table <- function(df, group_col, group_label) {
+.amb_group_table <- function(df, group_col, group_label, code_col = NULL, code_label = NULL) {
   df <- df[order(-df$total_claims), ]
   if (nrow(df) == 0) {
     return(div(class = "text-center text-muted p-5",
@@ -509,6 +655,7 @@ amb_chart_js <- paste0(
   rows <- lapply(seq_len(nrow(df)), function(i) {
     r <- df[i, ]
     tags$tr(
+      if (!is.null(code_col)) tags$td(tags$code(r[[code_col]])),
       tags$td(class = "fw-medium", r[[group_col]]),
       tags$td(fmt_num(r$total_claims)),
       tags$td(fmt_currency(r$total_value)),
@@ -524,6 +671,7 @@ amb_chart_js <- paste0(
       class = "table table-hover table-striped align-middle mb-0",
       tags$thead(class = "table-light",
         tags$tr(
+          if (!is.null(code_col)) col_th(code_label, "110px"),
           col_th(group_label, "200px"),
           col_th("Volume"),
           col_th("Value (KES)"),
@@ -695,8 +843,19 @@ amb_panel_ui <- function() {
 
     tags$hr(class = "my-4 border-light"),
 
-    # County / Vendor table
-    tags$h6(class = "ind-section-label", "Breakdown by County / Vendor"),
+    # Claims by intervention (SHA benefit-package line)
+    tags$h6(class = "ind-section-label", "Claims by Intervention"),
+    .amb_chart_card(
+      "Volume / Value by Intervention", "SHA benefit-package line item that triggered the dispatch",
+      "ambInterventionChart",
+      toggle = .amb_metric_toggle("intervention-metric", "switchAmbInterventionMetric"),
+      height = "460px"
+    ),
+
+    tags$hr(class = "my-4 border-light"),
+
+    # County / Vendor / Intervention table
+    tags$h6(class = "ind-section-label", "Breakdown by County / Vendor / Intervention"),
     tags$ul(class = "nav nav-pills mb-3", role = "tablist",
       tags$li(class = "nav-item", role = "presentation",
         tags$button(class = "nav-link active", id = "amb-tab-county",
@@ -705,11 +864,15 @@ amb_panel_ui <- function() {
       tags$li(class = "nav-item", role = "presentation",
         tags$button(class = "nav-link", id = "amb-tab-vendor",
           `data-bs-toggle` = "pill", `data-bs-target` = "#amb-pane-vendor",
-          type = "button", role = "tab", "By Vendor"))
+          type = "button", role = "tab", "By Vendor")),
+      tags$li(class = "nav-item", role = "presentation",
+        tags$button(class = "nav-link", id = "amb-tab-intervention",
+          `data-bs-toggle` = "pill", `data-bs-target` = "#amb-pane-intervention",
+          type = "button", role = "tab", "By Intervention"))
     ),
     div(class = "card border-0 shadow-sm",
       div(class = "card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3 px-4",
-        div(class = "fw-semibold", style = "color:#0f172a;", "Vendor / County Performance"),
+        div(class = "fw-semibold", style = "color:#0f172a;", "Vendor / County / Intervention Performance"),
         tags$button(type = "button",
           class = "btn btn-sm btn-outline-secondary",
           onclick = "showMockAction('Preparing ambulance claims Excel export - the file will download shortly.')",
@@ -720,11 +883,15 @@ amb_panel_ui <- function() {
         div(id = "amb-pane-county", class = "tab-pane fade show active", role = "tabpanel",
           .amb_group_table(amb_by_county, "county", "County")),
         div(id = "amb-pane-vendor", class = "tab-pane fade", role = "tabpanel",
-          .amb_group_table(amb_by_vendor, "vendor", "Vendor"))
+          .amb_group_table(amb_by_vendor, "vendor", "Vendor")),
+        div(id = "amb-pane-intervention", class = "tab-pane fade", role = "tabpanel",
+          .amb_group_table(amb_by_intervention, "intervention", "Intervention",
+                           code_col = "code", code_label = "SHA Code"))
       ),
       div(class = "card-footer bg-white border-top",
         tags$span(class = "text-muted small",
-          sprintf("%d vendors · %d counties", nrow(amb_by_vendor), nrow(amb_by_county)))
+          sprintf("%d vendors · %d counties · %d interventions",
+                  nrow(amb_by_vendor), nrow(amb_by_county), nrow(amb_by_intervention)))
       )
     )
   )
