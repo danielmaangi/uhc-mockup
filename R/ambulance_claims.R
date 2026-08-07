@@ -842,17 +842,6 @@ amb_panel_ui <- function() {
 
     tags$hr(class = "my-4 border-light"),
 
-    # Claims by intervention (SHA benefit-package line)
-    tags$h6(class = "ind-section-label", "Claims by Intervention"),
-    .amb_chart_card(
-      "Volume / Value by Intervention", "SHA benefit-package line item that triggered the dispatch",
-      "ambInterventionChart",
-      toggle = .amb_metric_toggle("intervention-metric", "switchAmbInterventionMetric"),
-      height = "380px"
-    ),
-
-    tags$hr(class = "my-4 border-light"),
-
     # County / Vendor / Intervention table
     tags$h6(class = "ind-section-label", "Breakdown by County / Vendor / Intervention"),
     tags$ul(class = "nav nav-pills mb-3", role = "tablist",
@@ -892,6 +881,17 @@ amb_panel_ui <- function() {
           sprintf("%d vendors · %d counties · %d interventions",
                   nrow(amb_by_vendor), nrow(amb_by_county), nrow(amb_by_intervention)))
       )
+    ),
+
+    tags$hr(class = "my-4 border-light"),
+
+    # Claims by intervention (SHA benefit-package line)
+    tags$h6(class = "ind-section-label", "Claims by Intervention"),
+    .amb_chart_card(
+      "Volume / Value by Intervention", "SHA benefit-package line item that triggered the dispatch",
+      "ambInterventionChart",
+      toggle = .amb_metric_toggle("intervention-metric", "switchAmbInterventionMetric"),
+      height = "380px"
     )
   )
 }
