@@ -14,6 +14,8 @@ source("R/cancer_payments.R")
 source("R/claims_ageing.R")
 source("R/sha_deliveries.R")
 source("R/ambulance_claims.R")
+source("R/phc.R")
+source("R/actuarial.R")
 
 # ==============================================================================
 # NAVIGATION DEFINITION
@@ -28,6 +30,11 @@ INDICATORS <- list(
   # No category = rendered as a flat top-level item, no collapsible group.
   list(id = "amb", label = "Ambulance Claims",
        icon = "bi-truck-front-fill",   category = NA),
+
+  list(id = "phc", label = "PHC Claims & Allocation",
+       icon = "bi-clipboard2-pulse-fill", category = "PHC"),
+  list(id = "act", label = "SHA Plus Membership & Claims",
+       icon = "bi-graph-up-arrow",        category = "Actuarial"),
 
   # Archived - these mockups have since been built for real, so they're kept
   # for reference but no longer the active mockup work.
@@ -498,6 +505,12 @@ app_js <- HTML("
     if (id === 'amb' && typeof window.revealAmbCharts === 'function') {
       setTimeout(window.revealAmbCharts, 80);
     }
+    if (id === 'phc' && typeof window.revealPhcCharts === 'function') {
+      setTimeout(window.revealPhcCharts, 80);
+    }
+    if (id === 'act' && typeof window.revealActCharts === 'function') {
+      setTimeout(window.revealActCharts, 80);
+    }
   });
 
   /* ── Sidebar search filter ──────────────────────────────────────────── */
@@ -614,6 +627,8 @@ ui <- page_sidebar(
     tags$script(HTML(ageing_chart_js)),      # from claims_ageing.R
     tags$script(HTML(deliveries_chart_js)), # from sha_deliveries.R
     tags$script(HTML(amb_chart_js)),        # from ambulance_claims.R
+    tags$script(HTML(phc_chart_js)),        # from phc.R
+    tags$script(HTML(act_chart_js)),        # from actuarial.R
     tags$script(app_js)
   ),
 
@@ -652,6 +667,16 @@ ui <- page_sidebar(
                modelled_df   = amb_modelled_sample,
                raw_grain     = "One row = one ambulance claim (joined: Payor System submission/status/vendor/patient/county x ERP payment confirmation)",
                modelled_grain= "One row = one vendor, aggregated claim counts/values by status, rejection rates and average TAT")),
+    tabPanel("phc", indicator_tabs_ui("phc", phc_panel_ui(),
+               raw_df        = phc_raw_sample,
+               modelled_df   = phc_modelled_sample,
+               raw_grain     = "One row = one PHC claim (facility × member × diagnosis × intervention)",
+               modelled_grain= "One row = one county, aggregated facility/claim counts and total amount")),
+    tabPanel("act", indicator_tabs_ui("act", act_panel_ui(),
+               raw_df        = act_raw_sample,
+               modelled_df   = act_modelled_sample,
+               raw_grain     = "One row = one contributor-month (joined: member_contribution_combined × household_dependent_combined × util, on cr_id)",
+               modelled_grain= "One row = one sector × age band, aggregated contributors/contributions/claims for the schedule period")),
     tabPanel("cur", indicator_def_only_ui("cur"))
   )
 )
@@ -690,6 +715,8 @@ server <- function(input, output, session) {
   cancer_server(input, output, session)
   deliveries_server(input, output, session)
   amb_server(input, output, session)
+  phc_server(input, output, session)
+  act_server(input, output, session)
   def_download_server(input, output, session, sapply(INDICATORS, `[[`, "id"))
 
   output$dl_reference_guide <- downloadHandler(

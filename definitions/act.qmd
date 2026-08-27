@@ -1,0 +1,76 @@
+---
+indicator_code: "ACT-001"
+indicator_name: "SHA Plus — Membership & Claims Analysis"
+definition: |
+  Actuarial-facing analysis of **active membership and claims**, split by
+  **Informal** and **Formal** sector, used to price and benchmark the
+  "SHA Plus" top-up product. Covers Schedule 1 (aggregated membership and
+  claims by age band, calendar year 2025) and a Monthly Contributions vs
+  Claims trend (Oct 2024 – Jun 2026, to date). Originated from a data
+  request from an external broker (Minet Kenya / Transnep Insurance
+  Brokers); this mockup covers only the quantitative schedules, not the
+  request's governance/tracking artifact.
+numerator: |
+  For the reconciliation identities: TOTAL row (contributors,
+  contributions, dependants, claims, amount claimed) = sum of the ten
+  age-band rows, for each sector independently. Monthly trend TOTAL =
+  sum of the 21 monthly values for contributions/claims/amount
+  (contributor counts are the exception — see notes below).
+denominator: |
+  - **Loss ratio** — Amount claimed ÷ Contributions, per sector.
+  - **Avg claim per contributor** — Amount claimed ÷ No. of contributors,
+    per age band and per sector.
+  - **Visit/claim rate** — No. of claims ÷ No. of contributors is
+    implicit in the schedule but not shown as a separate column.
+unit_of_measure: |
+  - **KES** — contributions, amount claimed
+  - **n** — contributors, dependants, claims
+  - **x** — loss ratio (amount claimed as a multiple of contributions)
+data_source: |
+  - `member_contribution_combined.csv` — contributors, contributions
+  - `household_dependent_combined.csv` — dependants (attributed to the
+    principal contributor's cohort via household_number)
+  - `230626_util.csv` — claims
+  - Joined on `cr_id`
+frequency: "Schedule 1: annual (calendar year 2025). Monthly trend: monthly, Oct 2024 – Jun 2026 to date."
+disaggregation: |
+  - Age band (10 bands: 18-25 through >65, plus "Age not captured")
+  - Sector: Informal / Formal / Overall (combined)
+  - Month of admission (claims) / month of contribution (contributions),
+    Oct 2024 – Jun 2026
+filters: |
+  None — the source schedules cover fixed, stated periods (calendar year
+  2025 for Schedule 1; Oct 2024–Jun 2026 for the monthly trend), so no
+  interactive filter is exposed.
+acceptance_criteria: |
+  - Schedule 1's TOTAL row must equal the sum of its ten age-band rows,
+    for each sector, independently of the "Age not captured" line.
+  - Total Amount Claimed = SHIF FUND + ECCIF FUND; No. of Claims = claims
+    admitted in the period for the cohort (all stages).
+  - Sector is taken from `member_type`; age band is contributor age as
+    at 31 Dec 2025 — dependants are not independently age-banded.
+  - Monthly trend: No. of CRs (distinct contributors who contributed
+    that month) is **not** summed to a total, since it is not additive
+    across months; Contributions/Claims/Amount are summed.
+  - Contributors whose date of birth is blank in the source cannot be
+    age-banded and are excluded from the bands and TOTAL row — shown as
+    a separate "Age not captured" line rather than dropped.
+notes_caveats: |
+  - Loss ratio (claims ÷ contributions) is a derived indicator, not a
+    workbook column — computed directly from the two totals already
+    reported side by side.
+  - Figures on this page are transcribed directly from the source
+    workbook (`Revamp Indicators V2.xlsx`), not synthetically generated
+    — this module is presenting a real actuarial analysis snapshot, not
+    an operational claims-flow mockup.
+  - Sponsor members are excluded from the contribution totals. The most
+    recent month(s) of contributions may be partial as collections are
+    still being posted (notably Formal sector, Jun 2026).
+  - Admissions and contribution periods after Jun 2026 (including
+    prepaid/future coverage) are excluded from the monthly trend ("to
+    date").
+sdg_who_ref: |
+  **SDG 3.8 / 1.3** — Universal Health Coverage and social protection;
+  the Informal-vs-Formal cross-subsidy pattern shown here is directly
+  relevant to UHC financing sustainability and equity monitoring.
+---

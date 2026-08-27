@@ -1,0 +1,94 @@
+---
+indicator_code: "PHC-001"
+indicator_name: "PHC Claims & Allocation"
+definition: |
+  Facility-level reporting on **Primary Health Care (PHC) claims and fund
+  allocation** — headline volume/spend indicators, a facility level ×
+  ownership breakdown, a county breakdown, a county × level cross-tab, a
+  month-on-month allocation trend by payment status, and diagnosis /
+  intervention rankings. Follows the Digital Health Agency's standard PHC
+  table template. PHC maternity claims are retained throughout every table
+  and are not separated out or excluded.
+numerator: |
+  Varies by table — see each card/column below. Facility, claim and amount
+  counts are computed from the PHC claims batch for the stated reporting
+  period; the monthly allocation table (Table 4) is computed from the
+  payment/allocation system instead.
+denominator: |
+  - **Total PHC amount** — sum of the claimed/allocated amount for all PHC
+    transactions in the reporting period, KES '000.
+  - **Transacting facilities** — count of distinct facility IDs with ≥1
+    claim in the period (not the number of contracted or licensed
+    facilities).
+  - **Claims** — count of claim records for the period, optionally
+    grouped by facility level & ownership, county, diagnosis code or
+    intervention code.
+  - **Unique members** — count of distinct beneficiary identifiers with
+    ≥1 claim in the period (or with ≥1 claim carrying a given diagnosis /
+    intervention code). A member claiming in two counties is counted once
+    per county and once nationally, so county figures do not sum to the
+    national total.
+  - **Visit frequency** — Claims ÷ Unique members ÷ number of months in
+    the reporting period.
+unit_of_measure: |
+  - **KES '000** — total amount
+  - **n** — facilities, claims, unique members
+  - **visits per member per month** — visit frequency
+  - **%** — column percentages, computed on the non-missing denominator,
+    to one decimal place
+data_source: |
+  - **PHC claims batch extract** — facility, level, ownership, county,
+    diagnosis code, intervention code, claim amount, service date
+  - **PHC allocation / payment system** — month of allocation, payment
+    status (Paid / Not paid), as at the extraction date
+frequency: "Per reporting period (batch extract); Table 4's payment status is a point-in-time snapshot as at the extraction date."
+disaggregation: |
+  - Facility level (Level 2–6, plus not classified) × ownership (Public,
+    FBO, Private, NGO, not stated) — Table 1
+  - County — Table 2
+  - County × facility level — Table 3
+  - Facility × month of allocation × payment status — Table 4
+  - Primary ICD-11 diagnosis, national / by county / by facility — Tables
+    5–7
+  - Intervention (benefit-package line), national — Table 8
+filters: |
+  - Reporting period (start date – end date)
+  - Extraction date (batch reference)
+acceptance_criteria: |
+  - Headline cards, Table 1 and Table 2 must reconcile to the same
+    national claim count, facility count and total amount.
+  - Table 3 must reconcile to Table 2 by county: each county row sums to
+    its Total column, and the Total column sums to the National row.
+  - Records with a missing level, ownership, county, diagnosis or
+    intervention are retained in an explicit "not stated" / "not
+    classified" category rather than dropped, so every column sums to
+    its stated total.
+  - Table 4 sits on a different base from Tables 1–3 (month of
+    allocation, not month of service) and is not required to reconcile
+    to the headline total — this must be stated in the caption whenever
+    both appear in the same report.
+  - Tables 5–8 carry no amount column — volume tables only, so a count
+    ranking is never read as a cost-driver ranking. A separate table
+    ranked by amount should be produced if cost ranking is needed.
+  - Claims per member is the frequency measure used consistently
+    throughout Tables 5–8, reported alongside (not instead of) the
+    share-of-claims percentage.
+notes_caveats: |
+  - Diagnosis codes/titles shown in Tables 5–7 are illustrative
+    placeholders (plausible primary-care conditions), not a real ICD-11
+    stem-code extract — pending the real diagnosis dictionary mapping.
+  - Table 4, Table 6 and Table 7 show a small number of representative
+    facilities/counties with a "repeats for every X" note, matching the
+    source template's own convention, rather than every facility/county.
+  - A member claiming in two counties is counted once per county and
+    once nationally; national unique-member totals are therefore
+    slightly below the sum of the county-level totals.
+  - Facility counts, diagnosis mixes and cost-per-claim figures are
+    synthetic (seeded, not sourced from KMHFR or a real claims extract)
+    — structure and reconciliation behaviour are the point, not the
+    specific figures.
+sdg_who_ref: |
+  **SDG 3.8** — Universal Health Coverage; PHC is the primary access
+  point for essential health services and the foundation for UHC
+  financial-protection monitoring.
+---
